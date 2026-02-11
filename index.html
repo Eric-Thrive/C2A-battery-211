@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2A Coach's Dashboard | Interactive Report</title>
+    <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #2563eb;       /* Lens 1 color */
+            --secondary: #059669;     /* Lens 2 color */
+            --tertiary: #d97706;      /* Lens 3 color */
+            --quaternary: #7c3aed;    /* Lens 4 color */
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 4rem;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0 0 0; /* Changed padding to accommodate tabs */
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .header-content {
+            padding: 0 1.5rem 2rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-content h1 { font-size: 1.8rem; font-weight: 800; color: #0f172a; }
+        .header-content p { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem; }
+        .badge { 
+            display: inline-block; 
+            background: #e0f2fe; 
+            color: #0369a1; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 99px; 
+            font-size: 0.75rem; 
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Main Navigation Tabs --- */
+        .main-tabs {
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .main-tab-btn {
+            background: transparent;
+            border: none;
+            padding: 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .main-tab-btn:hover { color: var(--primary); }
+        
+        .main-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* --- Tab Content Areas --- */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-pane.active { display: block; }
+
+        /* --- Section Titles --- */
+        h2 {
+            font-size: 1.4rem;
+            color: #334155;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            font-size: 1.2rem;
+            color: #1e293b;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Tables for Detailed View --- */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        .detail-table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .detail-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .detail-table tr:last-child td { border-bottom: none; }
+
+        /* --- Lens Navigation (Cards) --- */
+        .lens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .lens-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 2px solid transparent;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lens-card:hover { transform: translateY(-3px); }
+        .lens-card.active { border-color: currentColor; background: #fafafa; }
+        
+        .lens-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: currentColor;
+        }
+
+        /* Color modifiers for lenses */
+        .l1 { color: var(--primary); }
+        .l2 { color: var(--secondary); }
+        .l3 { color: var(--tertiary); }
+        .l4 { color: var(--quaternary); }
+
+        .lens-number {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .lens-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .lens-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* --- Content Area for Lenses --- */
+        .display-area {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+            min-height: 200px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .lens-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        .lens-detail-title { font-size: 1.5rem; font-weight: 700; }
+        .lens-question { 
+            font-style: italic; 
+            color: var(--text-muted); 
+            background: #f8fafc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border-left: 3px solid #cbd5e1;
+        }
+
+        /* --- Interactive Diagnosis Section --- */
+        .diagnosis-container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        .diagnosis-header {
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .diagnosis-header h2 { color: white; justify-content: center; margin-bottom: 0.5rem; border: none; }
+        
+        .selector-wrapper {
+            margin-top: 1rem;
+            display: inline-block;
+            position: relative;
+        }
+        
+        select.skill-select {
+            appearance: none;
+            background: white;
+            border: none;
+            padding: 1rem 3rem 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            color: #334155;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            outline: none;
+            min-width: 300px;
+        }
+        .selector-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            font-size: 0.8rem;
+        }
+
+        .diagnosis-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .flow-step {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .flow-step h4 {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .flow-step .step-content {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1.1rem;
+        }
+        
+        /* Arrow between steps on desktop */
+        @media (min-width: 768px) {
+            .flow-step:not(:last-child)::after {
+                content: '→';
+                position: absolute;
+                right: -1.5rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #cbd5e1;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* --- Timeline Visualization --- */
+        .timeline-wrapper {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 2rem 1rem;
+            min-width: 600px;
+        }
+        /* Line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 40px; right: 40px;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+
+        .time-point {
+            position: relative;
+            z-index: 2;
+            background: white;
+            padding: 0 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30%;
+        }
+
+        .dot {
+            width: 24px;
+            height: 24px;
+            background: var(--accent, #3b82f6);
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 0 4px #e0f2fe;
+            margin-bottom: 1rem;
+        }
+
+        .tp-title { font-weight: 800; color: #334155; font-size: 1.2rem; }
+        .tp-sub { font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem; font-weight: 500; }
+        .tp-list { 
+            text-align: center; 
+            font-size: 0.8rem; 
+            color: #475569; 
+            background: #f1f5f9; 
+            padding: 0.75rem; 
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        /* --- Utilities --- */
+        .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Case Study Button */
+        .case-study-btn {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 1rem;
+            width: 100%;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            transition: 0.2s;
+        }
+        .case-study-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .case-detail {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-top: none;
+            padding: 1.5rem;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Highlight Box for text */
+        .highlight-box {
+            background-color: #e0f2fe;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+            color: #0c4a6e;
+        }
+        .highlight-box.warning {
+            background-color: #fff7ed;
+            border-color: var(--tertiary);
+            color: #7c2d12;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <span class="badge">C2A PILOT PROGRAM</span>
+            <h1>C2A Durable Skills Assessment Battery</h1>
+            <p>Four Coaching Lenses Model — 14-Instrument Battery</p>
+        </div>
+        
+        <!-- MAIN NAVIGATION TABS -->
+        <div class="main-tabs">
+            <button class="main-tab-btn active" onclick="switchMainTab(1)">Coach Dashboard</button>
+            <button class="main-tab-btn" onclick="switchMainTab(2)">Battery Details (Lenses 1-4)</button>
+            <button class="main-tab-btn" onclick="switchMainTab(3)">Diagnostic Guide</button>
+            <button class="main-tab-btn" onclick="switchMainTab(4)">Administration & Scoring</button>
+        </div>
+    </header>
+
+<div class="container">
+
+    <!-- ============================================= -->
+    <!-- TAB 1: COACH DASHBOARD (Interactive Tools)    -->
+    <!-- ============================================= -->
+    <div id="tab-1" class="tab-pane active">
+        
+        <!-- 1. LENS EXPLORER -->
+        <section>
+            <h2>Interactive Lens Explorer <span style="font-size: 0.8em; font-weight: 400; margin-left: auto; color: #64748b; border:none;">Click to view quick summaries</span></h2>
+            
+            <div class="lens-grid">
+                <div class="lens-card l1" onclick="showLens(1)">
+                    <span class="lens-number">Lens 1</span>
+                    <div class="lens-title">Executive Function</div>
+                    <div class="lens-desc">Cognitive capacities & constraints</div>
+                </div>
+                <div class="lens-card l2" onclick="showLens(2)">
+                    <span class="lens-number">Lens 2</span>
+                    <div class="lens-title">Durable Skills</div>
+                    <div class="lens-desc">Core competencies & gaps</div>
+                </div>
+                <div class="lens-card l3" onclick="showLens(3)">
+                    <span class="lens-number">Lens 3</span>
+                    <div class="lens-title">Self-Determination</div>
+                    <div class="lens-desc">Motivational dynamics</div>
+                </div>
+                <div class="lens-card l4" onclick="showLens(4)">
+                    <span class="lens-number">Lens 4</span>
+                    <div class="lens-title">Context</div>
+                    <div class="lens-desc">Environmental enablers</div>
+                </div>
+            </div>
+
+            <div id="lens-display" class="display-area">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- 2. DIAGNOSTIC SIMULATOR -->
+        <section>
+            <h2>Diagnostic Simulator</h2>
+            <div class="diagnosis-container">
+                <div class="diagnosis-header">
+                    <h2>I am coaching a student struggling with:</h2>
+                    <div class="selector-wrapper">
+                        <select class="skill-select" id="skillSelector" onchange="runDiagnosis()">
+                            <option value="" disabled selected>Select a skill...</option>
+                            <option value="Critical Thinking">Critical Thinking</option>
+                            <option value="Creative Problem Solving">Creative Problem Solving</option>
+                            <option value="Resilience">Resilience</option>
+                            <option value="Adaptability">Adaptability</option>
+                            <option value="Communication">Communication</option>
+                            <option value="Empathy">Empathy</option>
+                            <option value="Networking">Networking</option>
+                            <option value="Collaboration">Collaboration</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="diagnosis-flow hidden" id="diagnosisResult">
+                    <div class="flow-step" style="border-left: 4px solid var(--primary);">
+                        <h4>Step 1: Check EF (Lens 1)</h4>
+                        <div class="step-content" id="res-ef"></div>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">Is this a capacity issue?</p>
+                    </div>
+                    <div class="flow-step" style="border-left: 4px solid var(--secondary);">
+                        <h4>Step 2: Analyze Skill (Lens 2)</h4>
+                        <div class="step-content" id="res-skill"></div>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">Where specifically is the gap?</p>
+                    </div>
+                    <div class="flow-step" style="border-left: 4px solid var(--tertiary);">
+                        <h4>Step 3: Check Context (Lens 3)</h4>
+                        <div class="step-content" id="res-mot"></div>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">Is there motivational fuel?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. TIMELINE VISUALIZATION -->
+        <section>
+            <h2>Administration Timeline</h2>
+            <div class="timeline-wrapper">
+                <div class="timeline">
+                    <div class="time-point">
+                        <div class="dot" style="--accent: #2563eb"></div>
+                        <div class="tp-title">T1: Intake</div>
+                        <div class="tp-sub">Start of Semester</div>
+                        <div class="tp-list">
+                            <strong>Sprint A:</strong> EF + SDT<br>
+                            <strong>Sprint B:</strong> Core Skills<br>
+                            <strong>Sprint C:</strong> Interpersonal
+                        </div>
+                    </div>
+                    <div class="time-point">
+                        <div class="dot" style="--accent: #059669"></div>
+                        <div class="tp-title">T2: Check-in</div>
+                        <div class="tp-sub">Mid-Semester</div>
+                        <div class="tp-list">
+                            <strong>Sprint A:</strong> Core Skills I<br>
+                            <strong>Sprint B:</strong> Core Skills II<br>
+                            (Rapid feedback loop)
+                        </div>
+                    </div>
+                    <div class="time-point">
+                        <div class="dot" style="--accent: #7c3aed"></div>
+                        <div class="tp-title">T3: Outcomes</div>
+                        <div class="tp-sub">End of Semester</div>
+                        <div class="tp-list">
+                            <strong>Sprint A:</strong> EF + SDT<br>
+                            <strong>Sprint B:</strong> Core Skills<br>
+                            <strong>Sprint C:</strong> Interpersonal/Context
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- TAB 2: BATTERY DETAILS (Full Text)            -->
+    <!-- ============================================= -->
+    <div id="tab-2" class="tab-pane">
+        
+        <h2>Overview</h2>
+        <p class="highlight-box">
+            The C2A assessment battery measures 12 durable skills from the LE3 Graduate Pillars Framework using 14 validated psychometric instruments totaling 144 items. The battery is organized into four coaching lenses — a framework designed around what coaches need to know, in what order, to make effective decisions about student support.
+        </p>
+
+        <h3 style="color: var(--primary);">Lens 1: Executive Function</h3>
+        <p><strong>Purpose:</strong> Profile the cognitive and regulatory capacities that shape how a student learns, adapts, and self-regulates. Strong EF is an asset to build on; EF difficulties are constraints that require accommodation in coaching approach.</p>
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>Instrument</th>
+                    <th>Abbrev.</th>
+                    <th>Items</th>
+                    <th>Construct</th>
+                    <th>Reported Score</th>
+                    <th>Scale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ADEXI — Working Memory subscale</td>
+                    <td>ADEXI-WM</td>
+                    <td>7</td>
+                    <td>Holding and manipulating information in mind</td>
+                    <td><strong>Working Memory</strong></td>
+                    <td>1–5 Likert</td>
+                </tr>
+                <tr>
+                    <td>ADEXI — Inhibition subscale</td>
+                    <td>ADEXI-Inh</td>
+                    <td>7</td>
+                    <td>Impulse regulation and response suppression</td>
+                    <td><strong>Inhibition</strong></td>
+                    <td>1–5 Likert</td>
+                </tr>
+                <tr>
+                    <td>Cognitive Flexibility Scale</td>
+                    <td>CFS</td>
+                    <td>12</td>
+                    <td>Willingness and self-perceived ability to adapt thinking and behavior to new situations</td>
+                    <td><strong>Cognitive Flexibility</strong></td>
+                    <td>1–6 Likert</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="color: var(--secondary);">Lens 2: Durable Skills</h3>
+        <p><strong>Purpose:</strong> Measure the 12 LE3 durable skills across 4 pillars. These are the direct intervention targets.</p>
+        
+        <h4>Pillar 1: Cognitive Skills</h4>
+        <table class="detail-table">
+            <tr><th>LE3 Skill</th><th>Instrument(s)</th><th>Items</th><th>What It Measures</th></tr>
+            <tr><td>Critical Thinking</td><td>MSLQ-CT</td><td>5</td><td>Habits of evaluating evidence, questioning assumptions, and applying reasoning.</td></tr>
+            <tr><td>Creative Problem Solving</td><td>SFCQ</td><td>10</td><td>Sociocultural knowledge, metacognitive skills, and cognitive flexibility applied to problem contexts.</td></tr>
+            <tr><td>Cognitive Flexibility</td><td>CFS</td><td>—</td><td>Scored in Lens 1; mapped here because cognitive flexibility is both an EF capacity and a durable skill.</td></tr>
+        </table>
+
+        <h4>Pillar 2: Intrapersonal Skills</h4>
+        <table class="detail-table">
+            <tr><th>LE3 Skill</th><th>Instrument(s)</th><th>Items</th><th>What It Measures</th></tr>
+            <tr><td>Resilience</td><td>BRS</td><td>6</td><td>Ability to bounce back from stress, adversity, and setbacks.</td></tr>
+            <tr><td>Adaptability</td><td>CAAS-SF</td><td>12</td><td>Career adaptability across four dimensions: concern, control, curiosity, confidence.</td></tr>
+            <tr><td>Self-Regulation</td><td>ADEXI</td><td>—</td><td>Scored in Lens 1; WM + Inhibition constitute the core self-regulation infrastructure.</td></tr>
+        </table>
+
+        <h4>Pillar 3: Interpersonal Skills</h4>
+        <table class="detail-table">
+            <tr><th>LE3 Skill</th><th>Instrument(s)</th><th>Items</th><th>What It Measures</th></tr>
+            <tr><td>Empathy</td><td>IRI</td><td>14</td><td>Perspective-taking (cognitive) and empathic concern (affective).</td></tr>
+            <tr><td>Communication</td><td>SPCC</td><td>12</td><td>Self-perceived competence across 4 contexts × 3 receiver types.</td></tr>
+            <tr><td>Networking</td><td>C2A-NBS-6</td><td>6</td><td>Networking behaviors over the past month.</td></tr>
+            <tr><td>Relationship Quality</td><td>RQM-6</td><td>6</td><td>Relationship maintenance behaviors (reciprocity, investment).</td></tr>
+        </table>
+
+        <h4>Pillar 4: Self-Direction Skills</h4>
+        <table class="detail-table">
+            <tr><th>LE3 Skill</th><th>Instrument(s)</th><th>Items</th><th>What It Measures</th></tr>
+            <tr><td>Initiative</td><td>CAAS-SF</td><td>—</td><td>Shared items with Adaptability (curiosity + concern).</td></tr>
+            <tr><td>Motivation & Purpose</td><td>GMS-Bookends</td><td>—</td><td>Scored in Lens 3; intrinsic motivation and amotivation levels.</td></tr>
+        </table>
+
+        <h3 style="color: var(--tertiary);">Lens 3: Self-Determination Dynamics</h3>
+        <p><strong>Purpose:</strong> Read the student's motivational and psychological functioning as a parallel signal alongside skill scores.</p>
+        <table class="detail-table">
+            <tr><th>Instrument</th><th>Items</th><th>What It Measures</th><th>What It Tells the Coach</th></tr>
+            <tr><td>BPNSFS-24</td><td>24</td><td>Autonomy, competence, relatedness (satisfaction & frustration).</td><td>Whether needs are being met, or active frustration is undermining skill development.</td></tr>
+            <tr><td>GMS-Bookends</td><td>10</td><td>Intrinsic motivation, external regulation, amotivation.</td><td>Where the student sits on the self-determination continuum.</td></tr>
+        </table>
+        <div class="highlight-box warning">
+            <strong>Clinical flag:</strong> GMS-Bookends Amotivation scores ≥ 4.0 indicate motivational disengagement requiring intervention before durable skill coaching can be effective.
+        </div>
+
+        <h3 style="color: var(--quaternary);">Lens 4: Contextual Enablers (Optional)</h3>
+        <p><strong>Purpose:</strong> Diagnose environmental conditions that moderate skill development. Administered at T3 only.</p>
+        <table class="detail-table">
+            <tr><th>Instrument</th><th>Items</th><th>What It Measures</th><th>What It Tells the Coach</th></tr>
+            <tr><td>LCQ-6</td><td>6</td><td>Perceived autonomy support from instructors.</td><td>Whether the learning environment supports or undermines student autonomy.</td></tr>
+            <tr><td>TPS-7</td><td>7</td><td>Psychological safety in team contexts.</td><td>Whether the student feels safe to take interpersonal risks.</td></tr>
+        </table>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- TAB 3: DIAGNOSTIC GUIDE (Full Text)           -->
+    <!-- ============================================= -->
+    <div id="tab-3" class="tab-pane">
+        <h2>Differential Diagnosis</h2>
+        <p>When a student scores low on a durable skill, the coach's first question should not be "how do I teach this skill?" but "why is this skill where it is?" The answer determines the intervention.</p>
+        <p>The four-lens structure makes this possible. A single-instrument skill measurement tells you <em>that</em> a student is struggling — the multi-instrument battery tells you <em>why</em>. The Executive Function lens is checked first because EF capacity changes the interpretation of everything downstream.</p>
+
+        <h3>Worked Example: Creative Problem Solving</h3>
+        <p>Creative Problem Solving is measured primarily by the SFCQ (Knowledge + Skills subscales) with supporting information from CFS (cognitive flexibility) and CAAS-SF Curiosity. When a student scores low, the battery enables the coach to distinguish three distinct profiles:</p>
+
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 2rem;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                <h4 style="color: var(--primary);">Profile A: Cognitive Constraint</h4>
+                <p><strong>Pattern:</strong> Low WM + Low Cognitive Flexibility + Normal/High Curiosity</p>
+                <p><strong>What's happening:</strong> The student is curious, but working memory limitations prevent them from holding multiple solutions simultaneously. They appear "stuck" due to capacity, not lack of ideas.</p>
+                <p><strong>Coaching approach:</strong> Scaffold externally. Use visual organizers and decision matrices. Do NOT insist they "think harder."</p>
+            </div>
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                <h4 style="color: var(--tertiary);">Profile B: Dispositional Barrier</h4>
+                <p><strong>Pattern:</strong> Normal WM + Low Cognitive Flexibility + Low Curiosity</p>
+                <p><strong>What's happening:</strong> Adequate capacity, but low flexibility/curiosity creates a dispositional barrier. They resist exploring novel approaches.</p>
+                <p><strong>Coaching approach:</strong> Build tolerance for ambiguity. Check Lens 3 for motivation.</p>
+            </div>
+            <div style="padding: 1.5rem;">
+                <h4 style="color: var(--secondary);">Profile C: Exploratory Deficit</h4>
+                <p><strong>Pattern:</strong> Normal WM + Normal Flexibility + Low Curiosity + Low SFCQ-Knowledge</p>
+                <p><strong>What's happening:</strong> Adequate infrastructure, but lacks the drive and cultural knowledge base.</p>
+                <p><strong>Coaching approach:</strong> Ignite curiosity through exposure to diverse perspectives and real-world problems.</p>
+            </div>
+        </div>
+
+        <h3>Skill-Specific Diagnostic Patterns</h3>
+        <table class="detail-table">
+            <tr>
+                <th>Durable Skill</th>
+                <th>EF Check (Lens 1)</th>
+                <th>Skill Instruments (Lens 2)</th>
+                <th>Motivational Context (Lens 3)</th>
+            </tr>
+            <tr>
+                <td><strong>Critical Thinking</strong></td>
+                <td>WM: Can they hold multiple arguments? CF: Shift viewpoints?</td>
+                <td>MSLQ-CT: Do they habitually evaluate evidence?</td>
+                <td>GMS-Intrinsic: Are they intellectually engaged?</td>
+            </tr>
+            <tr>
+                <td><strong>Resilience</strong></td>
+                <td>Inhibition: Can they regulate stress responses?</td>
+                <td>BRS: Is bounce-back capacity low across situations?</td>
+                <td>BPNSFS-Competence: Do they feel capable?</td>
+            </tr>
+            <tr>
+                <td><strong>Communication</strong></td>
+                <td>WM: Track threads? Inhibition: Manage impulses?</td>
+                <td>SPCC: Which contexts × receivers are weak?</td>
+                <td>BPNSFS-Relatedness: Connection to others?</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- TAB 4: ADMINISTRATION & SCORING (Full Text)   -->
+    <!-- ============================================= -->
+    <div id="tab-4" class="tab-pane">
+        <h2>Administration Recommendations</h2>
+        <h3>Three-Sitting Semester Design</h3>
+        <p>The battery is administered across three sittings per semester. Sittings are broken into "sprints" to minimize cognitive fatigue.</p>
+
+        <table class="detail-table">
+            <thead>
+                <tr><th>Sitting</th><th>Timing</th><th>Content</th><th>Items</th><th>Est. Time</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>T1</strong></td><td>Start of semester</td><td>EF + All Skills + SDT + SFCQ + IRI</td><td>~145</td><td>35–45 min (3 sprints)</td></tr>
+                <tr><td><strong>T2</strong></td><td>Mid-semester</td><td>Core Skills only</td><td>~59</td><td>15–20 min (2 sprints)</td></tr>
+                <tr><td><strong>T3</strong></td><td>End of semester</td><td>EF + Core Skills + SDT + IRI + Contextual</td><td>~134</td><td>25–35 min (3 sprints)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Sprint Structures</h3>
+        <p>Each sitting is divided into sprints of approximately 10–15 minutes. This is a critical design choice for students with executive function challenges.</p>
+        
+        <h4 style="margin-top: 1.5rem; color: var(--primary);">T1: Intake Sprints</h4>
+        <table class="detail-table">
+            <tr><th>Sprint</th><th>Content</th><th>Instruments</th><th>Items</th></tr>
+            <tr><td><strong>T1a</strong></td><td>EF + SDT baseline</td><td>ADEXI (14) + BPNSFS-24 (24) + GMS (10)</td><td>48</td></tr>
+            <tr><td><strong>T1b</strong></td><td>Core Skills</td><td>CFS (12) + CAAS-SF (12) + BRS (6) + SPCC (12) + MSLQ (5)</td><td>47</td></tr>
+            <tr><td><strong>T1c</strong></td><td>Interpersonal + Cultural</td><td>IRI (14) + NBS-6 (6) + RQM-6 (6) + SFCQ (10)</td><td>36</td></tr>
+        </table>
+
+        <h4 style="margin-top: 1.5rem; color: var(--secondary);">T2: Check-in Sprints</h4>
+        <table class="detail-table">
+            <tr><th>Sprint</th><th>Content</th><th>Instruments</th><th>Items</th></tr>
+            <tr><td><strong>T2a</strong></td><td>Core Skills I</td><td>CFS (12) + CAAS-SF (12) + BRS (6) + MSLQ (5)</td><td>35</td></tr>
+            <tr><td><strong>T2b</strong></td><td>Core Skills II</td><td>SPCC (12) + NBS-6 (6) + RQM-6 (6)</td><td>24</td></tr>
+        </table>
+
+        <h4 style="margin-top: 1.5rem; color: var(--tertiary);">T3: Outcomes Sprints</h4>
+        <table class="detail-table">
+            <tr><th>Sprint</th><th>Content</th><th>Instruments</th><th>Items</th></tr>
+            <tr><td><strong>T3a</strong></td><td>EF + SDT</td><td>ADEXI (14) + BPNSFS-24 (24) + GMS (10)</td><td>48</td></tr>
+            <tr><td><strong>T3b</strong></td><td>Core Skills</td><td>CFS (12) + CAAS-SF (12) + BRS (6) + SPCC (12) + MSLQ (5)</td><td>47</td></tr>
+            <tr><td><strong>T3c</strong></td><td>Contextual + Interpersonal</td><td>IRI (14) + LCQ-6 (6) + TPS-7 (7) + NBS (6) + RQM (6)</td><td>39</td></tr>
+        </table>
+        
+        <div class="highlight-box">
+            <strong>Why T1a/T3a first?</strong> It gives the coach the EF capacity profile and motivational baseline immediately. If a student shows high amotivation or significant WM difficulties in the first sprint, the coach already knows the profile is shaped by those factors before skill scores come in.
+        </div>
+
+        <h3>Scoring Engine Requirements</h3>
+        <ul style="padding-left: 1.5rem; line-height: 1.8;">
+            <li><strong>Score carry-forward:</strong> T2 reports display the most recent EF and SDT scores from T1 alongside current skill scores.</li>
+            <li><strong>Timestamps per lens:</strong> Each score carries its collection date (e.g., "EF scores from T1 — 6 weeks ago").</li>
+            <li><strong>Three-point trajectory:</strong> The engine supports slope/trend calculation across T1/T2/T3.</li>
+            <li><strong>Partial battery handling:</strong> The system treats missing instruments at T2 as by-design, not as missing data.</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    // --- TAB SWITCHING LOGIC ---
+    function switchMainTab(tabId) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+        // Show target tab
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        
+        // Update Buttons
+        document.querySelectorAll('.main-tab-btn').forEach(btn => btn.classList.remove('active'));
+        // The index logic assumes buttons are in order 1-4
+        document.querySelectorAll('.main-tab-btn')[tabId - 1].classList.add('active');
+    }
+
+
+    // --- LENS EXPLORER DATA (FOR DASHBOARD TAB) ---
+    const lensData = {
+        1: {
+            title: "Executive Function",
+            colorClass: "l1",
+            question: "What cognitive capacities is this student working with?",
+            content: `
+                <div style="display: grid; gap: 2rem; grid-template-columns: 1fr 1fr;">
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Instruments</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;">
+                                <span><strong>ADEXI-WM</strong> (7 items)</span>
+                                <span style="color: #64748b">Working Memory</span>
+                            </li>
+                            <li style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;">
+                                <span><strong>ADEXI-Inh</strong> (7 items)</span>
+                                <span style="color: #64748b">Inhibition</span>
+                            </li>
+                            <li style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;">
+                                <span><strong>CFS</strong> (12 items)</span>
+                                <span style="color: #64748b">Cog. Flexibility</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 8px;">
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Coach Action</h4>
+                        <p style="font-size: 0.9rem;"><strong>Check First:</strong> EF strengths indicate what coaching approaches will land.</p>
+                        <ul style="margin-top: 1rem; font-size: 0.9rem; padding-left: 1.2rem;">
+                            <li><strong>Low WM:</strong> Scaffold externally (visuals, checklists).</li>
+                            <li><strong>Low Inhibition:</strong> Structure pauses and self-monitoring.</li>
+                            <li><strong>Strong EF:</strong> Use complex, multi-step interventions.</li>
+                        </ul>
+                    </div>
+                </div>
+            `
+        },
+        2: {
+            title: "Durable Skills",
+            colorClass: "l2",
+            question: "Where are the skill gaps across the 12 LE3 competencies?",
+            content: `
+                <h4 style="margin-bottom: 0.5rem; color: var(--secondary);">Core Instruments by Pillar</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="border: 1px solid #eee; padding: 1rem; border-radius: 6px;">
+                        <strong>Cognitive</strong><br>
+                        <span style="font-size: 0.85rem; color: #64748b;">MSLQ-CT (Critical Thinking)<br>SFCQ (Problem Solving)</span>
+                    </div>
+                    <div style="border: 1px solid #eee; padding: 1rem; border-radius: 6px;">
+                        <strong>Intrapersonal</strong><br>
+                        <span style="font-size: 0.85rem; color: #64748b;">BRS (Resilience)<br>CAAS-SF (Adaptability)</span>
+                    </div>
+                    <div style="border: 1px solid #eee; padding: 1rem; border-radius: 6px;">
+                        <strong>Interpersonal</strong><br>
+                        <span style="font-size: 0.85rem; color: #64748b;">SPCC (Communication)<br>IRI (Empathy)</span>
+                    </div>
+                    <div style="border: 1px solid #eee; padding: 1rem; border-radius: 6px;">
+                        <strong>Self-Direction</strong><br>
+                        <span style="font-size: 0.85rem; color: #64748b;">GMS-Bookends<br>CAAS-SF</span>
+                    </div>
+                </div>
+            `
+        },
+        3: {
+            title: "Self-Determination Dynamics",
+            colorClass: "l3",
+            question: "How is the student's motivational functioning?",
+            content: `
+                <div style="display: grid; gap: 2rem; grid-template-columns: 1fr 1fr;">
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem; color: var(--tertiary);">Instruments</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;">
+                                <strong>BPNSFS-24</strong><br>
+                                <span style="font-size:0.85rem; color: #64748b">Basic Psychological Need Satisfaction & Frustration (Autonomy, Competence, Relatedness)</span>
+                            </li>
+                            <li style="margin-bottom: 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;">
+                                <strong>GMS-Bookends</strong><br>
+                                <span style="font-size:0.85rem; color: #64748b">Intrinsic vs. External Motivation vs. Amotivation</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="background: #fff7ed; padding: 1.5rem; border-radius: 8px;">
+                        <h4 style="color: var(--tertiary); margin-bottom: 0.5rem;">Clinical Flag</h4>
+                        <p style="font-size: 0.9rem;"><strong>Amotivation ≥ 4.0:</strong> Requires intervention before skills coaching.</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Bidirectional: Skill growth should fuel need satisfaction. If skills grow but SDT is flat, check environment.</p>
+                    </div>
+                </div>
+            `
+        },
+        4: {
+            title: "Contextual Enablers",
+            colorClass: "l4",
+            question: "Is the environment helping or hurting? (T3 Only)",
+            content: `
+                <p style="margin-bottom: 1rem;">Use this lens when skills aren't moving despite adequate EF and coaching.</p>
+                <table style="width:100%; font-size: 0.9rem; border-collapse: collapse;">
+                    <tr style="text-align:left; background: #f8fafc;">
+                        <th style="padding: 0.5rem;">Instrument</th>
+                        <th style="padding: 0.5rem;">Measures</th>
+                        <th style="padding: 0.5rem;">Diagnostic Question</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;"><strong>LCQ-6</strong></td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">Autonomy Support</td>
+                        <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">Do instructors offer choice and acknowledge feelings?</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.5rem;"><strong>TPS-7</strong></td>
+                        <td style="padding: 0.5rem;">Psychological Safety</td>
+                        <td style="padding: 0.5rem;">Does the student feel safe to take risks in their team?</td>
+                    </tr>
+                </table>
+            `
+        }
+    };
+
+    function showLens(id) {
+        const display = document.getElementById('lens-display');
+        const data = lensData[id];
+        
+        // highlight active card
+        document.querySelectorAll('.lens-card').forEach(c => c.classList.remove('active'));
+        document.querySelector(`.lens-card.l${id}`).classList.add('active');
+
+        display.innerHTML = `
+            <div class="lens-detail-header">
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b;">Lens ${id}</span>
+                    <div class="lens-detail-title ${data.colorClass}">${data.title}</div>
+                </div>
+                <div class="lens-question">${data.question}</div>
+            </div>
+            ${data.content}
+        `;
+    }
+
+    // Initialize with Lens 1
+    showLens(1);
+
+
+    // --- DIAGNOSTIC LOGIC ---
+    const diagnosticMap = {
+        "Critical Thinking": {
+            ef: "<strong>WM + Flex:</strong> Can they hold multiple arguments and shift viewpoints?",
+            skill: "<strong>MSLQ-CT:</strong> Do they habitually evaluate evidence?",
+            mot: "<strong>GMS-Intrinsic:</strong> Are they intellectually engaged?"
+        },
+        "Creative Problem Solving": {
+            ef: "<strong>WM + Flex:</strong> Can they hold options and shift perspectives?",
+            skill: "<strong>SFCQ:</strong> Do they have the cultural/metacognitive knowledge?",
+            mot: "<strong>CAAS-Curiosity:</strong> Do they have exploratory drive?"
+        },
+        "Resilience": {
+            ef: "<strong>Inhibition:</strong> Can they regulate immediate stress responses?",
+            skill: "<strong>BRS:</strong> Is bounce-back capacity low across situations?",
+            mot: "<strong>BPNSFS-Competence:</strong> Do they feel capable?"
+        },
+        "Adaptability": {
+            ef: "<strong>Cognitive Flex:</strong> Can they shift cognitive frames?",
+            skill: "<strong>CAAS-SF:</strong> Gap in Concern, Control, Curiosity, or Confidence?",
+            mot: "<strong>BPNSFS-Autonomy:</strong> Do they feel they have choice?"
+        },
+        "Communication": {
+            ef: "<strong>WM + Inhibition:</strong> Tracking threads vs. managing impulses.",
+            skill: "<strong>SPCC:</strong> Which context? (Public vs Dyad, Friend vs Stranger)",
+            mot: "<strong>BPNSFS-Relatedness:</strong> Connection to others?"
+        },
+        "Empathy": {
+            ef: "<strong>Cognitive Flex:</strong> Can they take others' perspectives?",
+            skill: "<strong>IRI:</strong> Cognitive (Perspective Taking) or Affective (Concern)?",
+            mot: "<strong>BPNSFS-Relatedness:</strong> Relational need satisfaction."
+        },
+        "Networking": {
+            ef: "<strong>Inhibition:</strong> Social approach/avoidance regulation.",
+            skill: "<strong>NBS-6:</strong> Behavioral frequency of initiating contacts.",
+            mot: "<strong>GMS-Amotivation:</strong> Is this broad disengagement?"
+        },
+        "Collaboration": {
+            ef: "<strong>WM + Flex:</strong> Tracking group dynamics and shifting roles.",
+            skill: "<strong>RQM-6:</strong> Reciprocity in relationships.",
+            mot: "<strong>TPS-7:</strong> Is the team environment safe? (Lens 4)"
+        }
+    };
+
+    function runDiagnosis() {
+        const skill = document.getElementById('skillSelector').value;
+        const resultDiv = document.getElementById('diagnosisResult');
+        const map = diagnosticMap[skill];
+
+        if (map) {
+            document.getElementById('res-ef').innerHTML = map.ef;
+            document.getElementById('res-skill').innerHTML = map.skill;
+            document.getElementById('res-mot').innerHTML = map.mot;
+            resultDiv.classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>
