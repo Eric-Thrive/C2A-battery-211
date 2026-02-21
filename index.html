@@ -3,1186 +3,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C2A Comprehensive Dashboard | Pilot</title>
+    <title>C2A Student Report | DDx Engine</title>
     <style>
         :root {
-            --bg-body: #f0f4f8;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --primary: #4f46e5;       /* Indigo */
-            --secondary: #0ea5e9;     /* Sky */
-            --tertiary: #d97706;      /* Amber/Orange */
-            --quaternary: #7c3aed;    /* Purple */
+            /* ============================================================== */
+            /* 🎨 BRAND COLORS: Sunwashed Palette                             */
+            /* ============================================================== */
+            --primary: #1297D2;         /* Navy Blue (Main brand color) */
+            --primary-hover: #0e7cae;   /* Slightly darker for hover states */
+            --primary-light: #eef8fb;   /* Very light tint for backgrounds */
+            --primary-border: #96D7E1;  /* Sky Blue (Medium tint for borders) */
+            --primary-dark: #0a5678;    /* Dark shade for text on light backgrounds */
             
-            /* Status Colors (Based on 1-100 Scale) */
-            --score-low: #f59e0b;     /* Amber (Needs Focus) */
-            --score-mid: #3b82f6;     /* Blue (Developing) */
-            --score-high: #10b981;    /* Green (Strong) */
+            /* ============================================================== */
+            /* ⚙️ BASE UI COLORS                                              */
+            /* ============================================================== */
+            --bg-body: #f8fafc;         /* App background */
+            --bg-card: #ffffff;         /* Card background */
+            --bg-hover: #f1f5f9;        /* Hover background for menus */
+            --text-main: #0f172a;       /* Main text (Dark) */
+            --text-muted: #64748b;      /* Secondary text (Gray) */
+            --border: #e2e8f0;          /* Standard borders */
+            --border-hover: #cbd5e1;    /* Hover borders */
             
-            --border: #e2e8f0;
+            /* ============================================================== */
+            /* 🚦 3-TIER SYSTEM COLORS (Blocker / Watch / Clear)              */
+            /* ============================================================== */
+            --tier-blocker-bg: #fef2f2;
+            --tier-blocker-text: #b91c1c;
+            --tier-blocker-border: #f87171;
+            
+            /* Integrated Palette Orange and Yellow for the Watch Tier */
+            --tier-watch-bg: #fffce8;    /* Very light yellow tint based on #FDE677 */
+            --tier-watch-text: #a65615;  /* Darkened version of Orange for text readability */
+            --tier-watch-border: #F89E54;/* Orange from palette */
+            
+            --tier-clear-bg: #ecfdf5;
+            --tier-clear-text: #047857;
+            --tier-clear-border: #34d399;
+
+            /* Spacing & Effects */
             --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 4rem; }
+
+        header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 1.5rem 0; margin-bottom: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-body);
-            color: var(--text-main);
-            line-height: 1.5;
-            padding-bottom: 4rem;
-        }
+        .student-switcher { padding: 0.5rem; font-size: 1rem; border-radius: 8px; border: 1px solid var(--border-hover); font-weight: 600; color: var(--primary); background: var(--bg-body); cursor: pointer; outline: none; }
+        .student-switcher:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
 
-        /* --- Header & Nav --- */
-        header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding-top: 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        /* New Layout Grids */
+        .top-dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .main-grid { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; align-items: start; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        h1 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; }
-        .user-profile { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; }
-        .avatar { width: 36px; height: 36px; background: #e0e7ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-
-        /* Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            overflow-x: auto;
-        }
-        .nav-tab {
-            padding-bottom: 1rem;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .nav-tab:hover { color: var(--primary); }
-        .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-        /* --- Main Layout --- */
-        .tab-content { display: none; margin-top: 2rem; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-
-        /* --- STUDENT 3-COLUMN GRID --- */
-        .student-grid {
-            display: grid;
-            grid-template-columns: 280px minmax(0, 1fr) 360px;
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        .sticky-col {
-            position: sticky;
-            top: 100px; 
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 transparent;
-        }
-        .sticky-col::-webkit-scrollbar { width: 6px; }
-        .sticky-col::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .sticky-col > div:last-child { margin-bottom: 1rem; }
-
-        /* --- SIDEBAR CARDS (Used in multiple places) --- */
-        .sidebar-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .sidebar-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .stat-row { margin-bottom: 1rem; }
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.25rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #334155;
-        }
-        .stat-track {
-            height: 8px;
-            background: #f1f5f9;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
-        .stat-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        /* Top Dash Cards */
+        .dash-card { background: var(--bg-card); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border); transition: background-color 0.3s ease; }
+        .dash-card.pulse-blocker, .accordion-item.pulse-blocker { animation: pulseRed 1s ease; }
+        .dash-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
         
-        .insight-box {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            background: #f8fafc;
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            line-height: 1.4;
-            border-left: 3px solid var(--secondary);
-        }
+        .metric-row { display: flex; gap: 1rem; margin-top: 1rem; }
+        .metric-box { background: var(--bg-body); padding: 0.75rem; border-radius: 8px; flex: 1; text-align: center; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.5rem; }
+        .metric-box strong { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* --- SKILL CARDS & PILLAR ACCORDIONS --- */
-        .pillar-section { 
-            margin-bottom: 1rem; 
-            background: var(--bg-card); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius); 
-            overflow: hidden; 
-            box-shadow: var(--shadow); 
-        }
+        /* Accordions */
+        .accordion-item { margin-bottom: 1rem; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .accordion-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; font-weight: 700; transition: background 0.2s; border-radius: var(--radius); }
+        .accordion-header:hover { background: var(--bg-hover); }
+        .accordion-header.active { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--border); }
+        .accordion-content { display: none; padding: 1.25rem; }
+        .accordion-content.active { display: block; }
+        .acc-title-group { display: flex; align-items: center; gap: 0.75rem; }
+
+        /* Caret Icons */
+        .acc-right { display: flex; align-items: center; gap: 0.75rem; }
+        .caret-icon { width: 1.25rem; height: 1.25rem; color: var(--text-muted); transition: transform 0.2s ease; }
+        .accordion-header.active .caret-icon { transform: rotate(180deg); }
+
+        /* Badges */
+        .badge { font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid; display: inline-block; text-align: center;}
+        .badge.blocker { background: var(--tier-blocker-bg); color: var(--tier-blocker-text); border-color: var(--tier-blocker-border); }
+        .badge.watch { background: var(--tier-watch-bg); color: var(--tier-watch-text); border-color: var(--tier-watch-border); }
+        .badge.clear { background: var(--tier-clear-bg); color: var(--tier-clear-text); border-color: var(--tier-clear-border); }
         
-        .pillar-title { 
-            font-size: 1.1rem; 
-            font-weight: 700; 
-            color: #1e293b; 
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 0; 
-            border-bottom: 1px solid transparent; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: background 0.2s;
+        /* Summary Pills for Top Dash */
+        .summary-pills { display: flex; gap: 0.5rem; align-items: center; }
+        .summary-pill {
+            display: flex; align-items: center; padding: 3px 10px 3px 4px;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 800;
+            text-transform: uppercase; border: 1px solid;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); letter-spacing: 0.5px;
         }
-        .pillar-title:hover { background: #f1f5f9; }
-        .pillar-title.active { border-bottom-color: var(--border); }
-        .pillar-title span { font-size: 0.8rem; color: #94a3b8; transition: transform 0.3s ease; }
-        .pillar-title.active span { transform: rotate(180deg); color: var(--primary); }
-
-        .pillar-content { display: none; padding: 1.5rem; background: var(--bg-card); }
-        .pillar-content.open { display: block; animation: fadeIn 0.3s ease; }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.25rem;
+        .summary-pill .count {
+            background: var(--bg-card); border-radius: 50%; width: 20px; height: 20px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.75rem; margin-right: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        .summary-pill.blocker { background: var(--tier-blocker-bg); color: var(--tier-blocker-text); border-color: var(--tier-blocker-border); }
+        .summary-pill.watch { background: var(--tier-watch-bg); color: var(--tier-watch-text); border-color: var(--tier-watch-border); }
+        .summary-pill.clear { background: var(--tier-clear-bg); color: var(--tier-clear-text); border-color: var(--tier-clear-border); padding: 4px 12px; }
+        .summary-pill.clear .count { display: none; }
 
-        .skill-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+        /* Skills List */
+        .skills-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .skill-row {
+            background: var(--bg-body); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem;
+            cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;
         }
-
-        .skill-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #cbd5e1; }
+        .skill-row:hover { transform: translateX(4px); border-color: var(--primary-border); background: var(--bg-card); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .skill-row.selected { border: 2px solid var(--primary); background-color: var(--primary-light); }
+        .skill-row .skill-name { font-weight: 700; font-size: 1rem; color: var(--text-main); margin: 0; }
         
-        .skill-card.selected { 
-            border: 2px solid var(--primary); 
-            background-color: #eef2ff; 
-            padding: 1.18rem; 
-        }
+        /* Action Planner (Right Col) */
+        .planner-section { background: var(--bg-card); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow); position: sticky; top: 20px; min-height: 400px; }
+        .planner-empty { text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); border: 2px dashed var(--border); border-radius: 12px; background: var(--bg-body); margin-top: 1rem; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+        .ddx-output { display: none; animation: fadeIn 0.3s ease; }
+        .ddx-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .ddx-header h2 { font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.25rem; }
+        .ef-lens { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; font-family: monospace; }
         
-        .skill-card.selected::after {
-            content: 'SELECTED';
-            position: absolute;
-            top: -10px;
-            right: 12px;
-            background: var(--primary);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
-        .skill-header { margin-bottom: 1rem; }
-        .skill-name { font-weight: 700; font-size: 1.05rem; color: #1e293b; line-height: 1.3; }
-
-        .skill-score-container { margin-top: auto; }
-        .score-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-
-        .status-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
-        .status-low { color: #b45309; background: #fffbeb; }
-        .status-mid { color: #1d4ed8; background: #eff6ff; }
-        .status-high { color: #047857; background: #ecfdf5; }
-
-        .score-val { font-size: 0.8rem; font-weight: 600; color: #64748b; }
-        .score-track { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; border: 1px solid #e2e8f0; }
+        /* Inner Planner Grid */
+        .planner-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .ui-section { display: flex; flex-direction: column; }
+        .ui-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 0.5rem; display: block; }
         
-        /* Bar Fills */
-        .fill-low { background-color: var(--score-low); }
-        .fill-mid { background-color: var(--score-mid); }
-        .fill-high { background-color: var(--score-high); }
-
-        /* --- ACTION PLAN SECTION --- */
-        .planner-section {
-            background: white;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            min-height: 400px;
-        }
-
-        .planner-empty {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            color: var(--text-muted);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            background: #f8fafc;
-            margin-top: 1rem;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-        }
-
-        .plan-card {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid var(--border);
-            animation: slideDown 0.3s ease;
-        }
-        .plan-card:last-child { border-bottom: none; }
-        .plan-actions label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #334155; }
+        /* Boxes - Made to stretch equally in grid */
+        .content-box { height: 100%; box-sizing: border-box; }
+        .student-ui-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 1.25rem; border-radius: 0 8px 8px 0; color: #166534; font-size: 0.95rem; line-height: 1.5; font-weight: 500; }
         
-        /* Personalized Insight Box */
-        .diagnostic-insight {
-            background: #f8fafc;
-            border-left: 3px solid var(--primary);
-            padding: 0.85rem 1rem;
-            margin-bottom: 1.25rem;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.85rem;
-            color: #475569;
-            line-height: 1.4;
-        }
-        .diagnostic-insight strong { color: var(--primary); }
+        /* Recs list */
+        .rec-item { background: var(--bg-card); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .rec-tag { font-size: 0.7rem; font-weight: 800; background: var(--border); color: var(--text-muted); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem; }
+        .rec-title { font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem; display: block; }
+        .rec-source { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; display: block; }
 
-        .plan-select { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; background-color: #f8fafc; color: #1e293b;}
-        .save-btn { background: var(--primary); color: white; border: none; padding: 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1.5rem; width: 100%; transition: background 0.2s; font-size: 1rem;}
-        .save-btn:hover { background: #4338ca; }
-
-
-        /* --- COACH VIEW (Single-Page Cockpit) --- */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 40% 1fr;
-            gap: 1.5rem;
-        }
-
-        .dash-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 1.25rem;
-            border: 1px solid var(--border);
-            margin-bottom: 1.5rem;
-        }
-
-        .dash-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Lens Grid Compact */
-        .lens-mini-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .lens-mini-card {
-            background: #f8fafc;
-            padding: 0.75rem;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .lens-mini-card:hover { transform: translateY(-2px); border-color: #cbd5e1; }
-        .lens-mini-card.active { background: white; border-color: currentColor; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-
-        .l1 { color: #2563eb; }
-        .l2 { color: #059669; }
-        .l3 { color: #d97706; }
-        .l4 { color: #7c3aed; }
-
-        .lens-mini-num { font-size: 0.7rem; font-weight: 800; opacity: 0.7; display: block; }
-        .lens-mini-title { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
-
-        .lens-display { font-size: 0.9rem; }
-        .lens-q { 
-            background: #f1f5f9; 
-            padding: 0.75rem; 
-            border-radius: 6px; 
-            font-style: italic; 
-            color: #475569; 
-            margin-bottom: 1rem;
-            border-left: 3px solid #cbd5e1;
-        }
-
-        /* Timeline Compact */
-        .timeline-compact {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            padding: 1rem 0;
-        }
-        .timeline-compact::before {
-            content: ''; position: absolute; top: 24px; left: 30px; right: 30px; height: 2px; background: #e2e8f0; z-index: 1;
-        }
-        .tp-compact { position: relative; z-index: 2; text-align: center; flex: 1; }
-        .dot-compact {
-            width: 16px; height: 16px; background: var(--acc); border-radius: 50%;
-            border: 3px solid white; box-shadow: 0 0 0 2px #e2e8f0; margin: 0 auto 0.5rem auto;
-        }
-        .tp-c-title { font-weight: 700; font-size: 0.9rem; color: #334155; }
-        .tp-c-sub { font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem; }
-        .tp-c-box { 
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; 
-            padding: 0.4rem; font-size: 0.75rem; display: inline-block; width: 90%; color: #475569;
-        }
-
-        /* Simulator Compact */
-        .diag-select {
-            width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px;
-            font-size: 1rem; color: #334155; background-color: white; cursor: pointer; margin-bottom: 1rem;
-        }
-        .diag-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
-        .diag-step { background: #f8fafc; border: 1px solid #e2e8f0; border-left-width: 4px; padding: 0.75rem; border-radius: 4px; }
-        .diag-step h5 { margin: 0 0 0.25rem 0; font-size: 0.7rem; text-transform: uppercase; color: #64748b; }
-        .diag-val { font-size: 0.9rem; color: #0f172a; font-weight: 600; }
-
-        /* --- REFERENCE TABS (Accordions) --- */
-        .accordion-wrapper {
-            background: white; border-radius: var(--radius); box-shadow: var(--shadow);
-            overflow: hidden; margin-bottom: 2rem; border: 1px solid var(--border);
-        }
-        .accordion-toggle {
-            background-color: white; color: #1e293b; cursor: pointer; padding: 1rem 1.5rem;
-            width: 100%; border: none; text-align: left; outline: none; font-size: 1.05rem;
-            font-weight: 700; transition: 0.2s; border-bottom: 1px solid #e2e8f0;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .accordion-toggle:hover { background-color: #f8fafc; color: var(--primary); }
-        .accordion-toggle.active { background-color: #f1f5f9; color: var(--primary); border-bottom-color: var(--border); }
-        .accordion-toggle span { transition: transform 0.3s ease; font-size: 0.8rem; color: #94a3b8; }
-        .accordion-toggle.active span { transform: rotate(180deg); color: var(--primary); }
-        
-        .accordion-panel { padding: 0 1.5rem; background-color: white; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; opacity: 0; border-bottom: none; }
-        .accordion-panel.open { padding-top: 1.5rem; padding-bottom: 1.5rem; opacity: 1; border-bottom: 1px solid #e2e8f0; }
-        .accordion-wrapper .accordion-panel:last-child { border-bottom: none; }
-
-        .acc-l1.active { border-left: 4px solid #2563eb; }
-        .acc-l2.active { border-left: 4px solid #059669; }
-        .acc-l3.active { border-left: 4px solid #d97706; }
-        .acc-l4.active { border-left: 4px solid #7c3aed; }
-
-        .detail-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: white; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 1rem; }
-        .detail-table th { background: #f8fafc; padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; color: #475569; font-size: 0.85rem;}
-        .detail-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
-        .detail-table tr:last-child td { border-bottom: none; }
-
-        /* Utilities */
-        .hidden { display: none; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .highlight-box { background-color: #e0f2fe; border-left: 4px solid var(--primary); padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; color: #0c4a6e; font-size: 0.9rem; }
-        .highlight-box.warning { background-color: #fff7ed; border-color: var(--tertiary); color: #7c2d12; }
 
-        /* Responsive Fix for Overlapping Sticky Sidebars */
-        @media (max-width: 1150px) {
-            /* Force single column layout on smaller screens to prevent sticky overlap */
-            .student-grid { grid-template-columns: 1fr; gap: 2rem; }
-            /* Remove sticky positioning completely so items stack normally */
-            .sticky-col { position: static !important; max-height: none !important; overflow: visible !important; }
-            .sticky-col:last-child { grid-column: 1 / -1; }
-            
-            .dashboard-grid { grid-template-columns: 1fr; }
+        @media (max-width: 1024px) {
+            .top-dash-grid { grid-template-columns: 1fr; }
+            .main-grid { grid-template-columns: 1fr; }
+            .planner-grid-2 { grid-template-columns: 1fr; }
+            .planner-section { position: static; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="container">
-        <div class="header-top">
-            <div>
-                <h1 style="margin-bottom:0.25rem;">C2A Assessment Hub</h1>
-                <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">Four Coaching Lenses Model • February 2026</p>
-            </div>
-            <div class="user-profile">
-                <span>Alex Student (Mock)</span>
-                <div class="avatar">AS</div>
-            </div>
+    <div class="container header-top">
+        <div>
+            <h1 style="font-size:1.5rem; font-weight:800; color:var(--text-main); display: flex; align-items: center; gap: 1rem;">
+                Viewing Profile:
+                <select id="student-selector" class="student-switcher" onchange="switchStudent(this.value)">
+                    <option value="carlos" selected>Carlos (Mixed Strengths & Needs Focus)</option>
+                </select>
+            </h1>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.25rem;">Diagnostic Analysis (DDx Schema Active)</p>
         </div>
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('student')">Student View</button>
-            <button class="nav-tab" onclick="switchTab('coach')">Coach View</button>
-            <button class="nav-tab" onclick="switchTab('details')">Battery Details</button>
-            <button class="nav-tab" onclick="switchTab('guide')">Diagnostic Guide</button>
-            <button class="nav-tab" onclick="switchTab('admin')">Admin & Scoring</button>
+        
+        <!-- Click to Expand Hint Box (Using Brand Colors) -->
+        <div style="background: var(--primary-light); border: 1px dashed var(--primary-border); color: var(--primary-dark); padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <svg style="width: 18px; height: 18px; color: var(--primary);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+            </svg>
+            Click any section below to expand
         </div>
     </div>
 </header>
 
-<div class="container">
-
-    <!-- ============================================= -->
-    <!-- TAB 1: STUDENT DASHBOARD                      -->
-    <!-- ============================================= -->
-    <div id="tab-student" class="tab-content active">
-        <div class="student-grid">
-
-            <!-- LEFT SIDEBAR: CONTEXT (Lenses 1, 3, 4) -->
-            <aside class="sticky-col">
-                <!-- Lens 3: Motivation -->
-                <div class="sidebar-card">
-                    <div class="sidebar-title"><span>🔥 My Fuel (Motivation)</span></div>
-                    
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Autonomy</span><span>80/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-high" style="width: 80%;"></div></div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Competence</span><span>40/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-low" style="width: 40%;"></div></div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Relatedness</span><span>90/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-high" style="width: 90%;"></div></div>
-                    </div>
-
-                    <div class="insight-box">
-                        <strong>Insight:</strong> Your "Competence" score is lower (Needs Focus), meaning you may doubt your abilities despite feeling supported. Let's build that confidence!
-                    </div>
-                </div>
-
-                <!-- Lens 1: EF -->
-                <div class="sidebar-card">
-                    <div class="sidebar-title"><span>🧠 My Engine (EF)</span></div>
-                    
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Working Memory</span><span>60/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-mid" style="width: 60%;"></div></div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Inhibition</span><span>85/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-high" style="width: 85%;"></div></div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Flexibility</span><span>50/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-mid" style="width: 50%;"></div></div>
-                    </div>
-
-                    <div class="insight-box">
-                        <strong>Tip:</strong> Your engine is strong! Since Working Memory is moderate, try using <strong>checklists</strong> and <strong>visual maps</strong> to keep track of complex steps.
-                    </div>
-                </div>
-
-                <!-- Lens 4: Context -->
-                <div class="sidebar-card">
-                    <div class="sidebar-title"><span>🌱 My Environment</span></div>
-                    
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Autonomy Support</span><span>90/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-high" style="width: 90%;"></div></div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-header"><span>Psych Safety</span><span>70/100</span></div>
-                        <div class="stat-track"><div class="stat-fill fill-mid" style="width: 70%;"></div></div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- MAIN CONTENT: SKILLS ACCORDIONS -->
-            <main>
-                <div style="margin-bottom:2rem;">
-                    <h2 style="font-size:1.3rem; margin-bottom:0.5rem; color:#0f172a; margin-top:0;">Select Focus Skills</h2>
-                    <p style="color:var(--text-muted); font-size:0.95rem;">
-                        Scores are on a <strong>1-100 scale</strong>. A higher score means stronger skill demonstration. 
-                        Click a card to add it to your plan.
-                    </p>
-                </div>
-
-                <!-- Pillar 1: Cognitive -->
-                <div class="pillar-section">
-                    <div class="pillar-title active" onclick="togglePillar(this)">Pillar 1: Cognitive Skills <span>▼</span></div>
-                    <div class="pillar-content open">
-                        <div class="skills-grid">
-                            <div class="skill-card" onclick="toggleSkill(this, 'Critical Thinking', 'Review evidence before forming opinions.')">
-                                <div class="skill-header"><div class="skill-name">Critical Thinking</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-mid">Developing</span><span class="score-val">55/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-mid" style="width: 55%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Creative Problem Solving', 'Generate multiple solutions.')">
-                                <div class="skill-header"><div class="skill-name">Creative Problem Solving</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-low">Needs Focus</span><span class="score-val">35/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-low" style="width: 35%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Cognitive Flexibility', 'Adapt thinking to new situations.')">
-                                <div class="skill-header"><div class="skill-name">Cognitive Flexibility</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-mid">Developing</span><span class="score-val">50/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-mid" style="width: 50%;"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pillar 2: Intrapersonal -->
-                <div class="pillar-section">
-                    <div class="pillar-title" onclick="togglePillar(this)">Pillar 2: Intrapersonal Skills <span>▼</span></div>
-                    <div class="pillar-content">
-                        <div class="skills-grid">
-                            <div class="skill-card" onclick="toggleSkill(this, 'Resilience', 'Bounce back from setbacks.')">
-                                <div class="skill-header"><div class="skill-name">Resilience</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-high">Strong</span><span class="score-val">85/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-high" style="width: 85%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Adaptability', 'Adjust to plans changing.')">
-                                <div class="skill-header"><div class="skill-name">Adaptability</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-mid">Developing</span><span class="score-val">65/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-mid" style="width: 65%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Self-Regulation', 'Manage impulses and focus.')">
-                                <div class="skill-header"><div class="skill-name">Self-Regulation</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-mid">Developing</span><span class="score-val">60/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-mid" style="width: 60%;"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pillar 3: Interpersonal -->
-                <div class="pillar-section">
-                    <div class="pillar-title" onclick="togglePillar(this)">Pillar 3: Interpersonal Skills <span>▼</span></div>
-                    <div class="pillar-content">
-                        <div class="skills-grid">
-                            <div class="skill-card" onclick="toggleSkill(this, 'Empathy', 'Understand others feelings.')">
-                                <div class="skill-header"><div class="skill-name">Empathy</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-high">Strong</span><span class="score-val">90/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-high" style="width: 90%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Communication', 'Speak and listen effectively.')">
-                                <div class="skill-header"><div class="skill-name">Communication</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-high">Strong</span><span class="score-val">82/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-high" style="width: 82%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Networking', 'Initiate contacts and relationships.')">
-                                <div class="skill-header"><div class="skill-name">Networking</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-low">Needs Focus</span><span class="score-val">40/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-low" style="width: 40%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Relationship Quality', 'Maintain supportive connections.')">
-                                <div class="skill-header"><div class="skill-name">Relationship Quality</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-mid">Developing</span><span class="score-val">58/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-mid" style="width: 58%;"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pillar 4: Self-Direction -->
-                <div class="pillar-section">
-                    <div class="pillar-title" onclick="togglePillar(this)">Pillar 4: Self-Direction Skills <span>▼</span></div>
-                    <div class="pillar-content">
-                        <div class="skills-grid">
-                            <div class="skill-card" onclick="toggleSkill(this, 'Initiative', 'Proactively explore and plan.')">
-                                <div class="skill-header"><div class="skill-name">Initiative</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-low">Needs Focus</span><span class="score-val">25/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-low" style="width: 25%;"></div></div>
-                                </div>
-                            </div>
-                            <div class="skill-card" onclick="toggleSkill(this, 'Motivation & Purpose', 'Driven by internal interest.')">
-                                <div class="skill-header"><div class="skill-name">Motivation & Purpose</div></div>
-                                <div class="skill-score-container">
-                                    <div class="score-meta"><span class="status-badge status-low">Needs Focus</span><span class="score-val">30/100</span></div>
-                                    <div class="score-track"><div class="stat-fill fill-low" style="width: 30%;"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <!-- RIGHT SIDEBAR: ACTION PLANNER -->
-            <aside class="sticky-col">
-                <div class="planner-section">
-                    <h2 style="font-size:1.3rem; margin-bottom:0.5rem; color:#0f172a; margin-top:0; display:flex; justify-content:space-between; align-items:center;">
-                        My Action Plan
-                        <span style="font-size:0.8rem; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-weight:700;" id="plan-counter">0 Selected</span>
-                    </h2>
-                    <div id="planner-container" style="flex-grow:1; display:flex; flex-direction:column;">
-                        <div class="planner-empty" id="empty-state">
-                            Select a skill from the center panel to generate targeted strategies.
-                        </div>
-                    </div>
-                    <button class="save-btn" id="save-btn" style="display: none;" onclick="alert('Plan saved! Your coach has been notified.')">Commit to Plan</button>
-                </div>
-            </aside>
-
+<!-- Top Dash Grid for Engine & Fuel -->
+<div class="container top-dash-grid">
+    <div id="card-engine" class="accordion-item" style="margin-bottom: 0;">
+        <div class="accordion-header" onclick="toggleAcc(this)">
+            <div class="acc-title-group">
+                <span>🧠 My Engine (Executive Function)</span>
+            </div>
+            <div class="acc-right">
+                <div id="summary-ef" class="summary-pills"></div>
+                <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
         </div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- TAB 2: COACH VIEW                             -->
-    <!-- ============================================= -->
-    <div id="tab-coach" class="tab-content">
-        <div class="dashboard-grid">
-            
-            <!-- LEFT COL: LENS NAVIGATOR -->
-            <div class="dash-card" style="margin-bottom:0;">
-                <div class="dash-title">Interactive Lens Explorer</div>
-                <div class="lens-mini-grid">
-                    <div class="lens-mini-card l1" onclick="showLens(1)">
-                        <span class="lens-mini-num">Lens 1</span><span class="lens-mini-title">Exec. Function</span>
-                    </div>
-                    <div class="lens-mini-card l2" onclick="showLens(2)">
-                        <span class="lens-mini-num">Lens 2</span><span class="lens-mini-title">Durable Skills</span>
-                    </div>
-                    <div class="lens-mini-card l3" onclick="showLens(3)">
-                        <span class="lens-mini-num">Lens 3</span><span class="lens-mini-title">Self-Determin.</span>
-                    </div>
-                    <div class="lens-mini-card l4" onclick="showLens(4)">
-                        <span class="lens-mini-num">Lens 4</span><span class="lens-mini-title">Context</span>
-                    </div>
+        <div class="accordion-content">
+            <p id="text-ef-desc" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;"></p>
+            <div class="metric-row">
+                <div class="metric-box">
+                    <strong>Working Memory</strong>
+                    <span id="badge-ef-wm" class="badge"></span>
                 </div>
-                <div id="lens-display" class="lens-display"></div>
-            </div>
-
-            <!-- RIGHT COL: DIAGNOSIS & TIMELINE -->
-            <div>
-                <!-- Diagnosis -->
-                <div class="dash-card">
-                    <div class="dash-title">Diagnostic Simulator</div>
-                    <div style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #64748b;">
-                        Select a skill the student is struggling with:
-                    </div>
-                    <select class="diag-select" id="skillSelector" onchange="runDiagnosis()">
-                        <option value="" disabled selected>Select a skill...</option>
-                        <option value="Critical Thinking">Critical Thinking</option>
-                        <option value="Creative Problem Solving">Creative Problem Solving</option>
-                        <option value="Resilience">Resilience</option>
-                        <option value="Adaptability">Adaptability</option>
-                        <option value="Communication">Communication</option>
-                        <option value="Empathy">Empathy</option>
-                        <option value="Networking">Networking</option>
-                        <option value="Collaboration">Collaboration</option>
-                    </select>
-
-                    <div id="diagnosisResult" class="diag-grid hidden">
-                        <div class="diag-step" style="border-left-color: #2563eb;">
-                            <h5>Step 1: Check EF (Lens 1)</h5>
-                            <div class="diag-val" id="res-ef"></div>
-                        </div>
-                        <div class="diag-step" style="border-left-color: #059669;">
-                            <h5>Step 2: Analyze Skill (Lens 2)</h5>
-                            <div class="diag-val" id="res-skill"></div>
-                        </div>
-                        <div class="diag-step" style="border-left-color: #d97706;">
-                            <h5>Step 3: Check Context (Lens 3)</h5>
-                            <div class="diag-val" id="res-mot"></div>
-                        </div>
-                    </div>
+                <div class="metric-box">
+                    <strong>Inhibition</strong>
+                    <span id="badge-ef-inh" class="badge"></span>
                 </div>
-
-                <!-- Timeline -->
-                <div class="dash-card" style="margin-bottom:0;">
-                    <div class="dash-title">Administration Timeline</div>
-                    <div class="timeline-compact">
-                        <div class="tp-compact">
-                            <div class="dot-compact" style="--acc: #2563eb"></div>
-                            <div class="tp-c-title">T1: Intake</div>
-                            <div class="tp-c-sub">Start of Semester</div>
-                            <div class="tp-c-box">Sprints A, B, C<br>(All Instruments)</div>
-                        </div>
-                        <div class="tp-compact">
-                            <div class="dot-compact" style="--acc: #059669"></div>
-                            <div class="tp-c-title">T2: Check-in</div>
-                            <div class="tp-c-sub">Mid-Semester</div>
-                            <div class="tp-c-box">Sprints A, B<br>(Core Skills)</div>
-                        </div>
-                        <div class="tp-compact">
-                            <div class="dot-compact" style="--acc: #7c3aed"></div>
-                            <div class="tp-c-title">T3: Outcomes</div>
-                            <div class="tp-c-sub">End of Semester</div>
-                            <div class="tp-c-box">Sprints A, B, C<br>(Re-measure All)</div>
-                        </div>
-                    </div>
+                <div class="metric-box">
+                    <strong>Cognitive Flex</strong>
+                    <span id="badge-ef-cf" class="badge"></span>
                 </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- TAB 3: BATTERY DETAILS (Accordions)           -->
-    <!-- ============================================= -->
-    <div id="tab-details" class="tab-content">
-        <h2 style="margin-top:0;">Battery Details</h2>
-        <div class="accordion-wrapper">
-            <button class="accordion-toggle acc-l1">Lens 1: Executive Function<span>▼</span></button>
-            <div class="accordion-panel">
-                <table class="detail-table">
-                    <thead><tr><th>Instrument</th><th>Construct</th><th>Scale</th></tr></thead>
-                    <tbody>
-                        <tr><td>ADEXI-WM</td><td>Working Memory</td><td>1–5 Likert</td></tr>
-                        <tr><td>ADEXI-Inh</td><td>Inhibition</td><td>1–5 Likert</td></tr>
-                        <tr><td>CFS</td><td>Cognitive Flex.</td><td>1–6 Likert</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <button class="accordion-toggle acc-l2">Lens 2: Durable Skills<span>▼</span></button>
-            <div class="accordion-panel">
-                <h4 style="margin-top:1rem;">Pillar 1: Cognitive</h4>
-                <table class="detail-table"><tr><td>Critical Thinking (MSLQ-CT)</td></tr><tr><td>Creative Prob. Solving (SFCQ)</td></tr></table>
-                <h4>Pillar 2: Intrapersonal</h4>
-                <table class="detail-table"><tr><td>Resilience (BRS)</td></tr><tr><td>Adaptability (CAAS-SF)</td></tr></table>
-                <h4>Pillar 3: Interpersonal</h4>
-                <table class="detail-table"><tr><td>Empathy (IRI)</td></tr><tr><td>Communication (SPCC)</td></tr></table>
-                <h4>Pillar 4: Self-Direction</h4>
-                <table class="detail-table"><tr><td>Initiative (CAAS-SF)</td></tr><tr><td>Motivation (GMS)</td></tr></table>
-            </div>
-
-            <button class="accordion-toggle acc-l3">Lens 3: Self-Determination<span>▼</span></button>
-            <div class="accordion-panel">
-                <table class="detail-table">
-                    <tr><th>Instrument</th><th>Measures</th></tr>
-                    <tr><td>BPNSFS-24</td><td>Need Satisfaction (Autonomy, Competence, Relatedness)</td></tr>
-                    <tr><td>GMS-Bookends</td><td>Intrinsic vs. Amotivation</td></tr>
-                </table>
-            </div>
-
-            <button class="accordion-toggle acc-l4">Lens 4: Context<span>▼</span></button>
-            <div class="accordion-panel">
-                <table class="detail-table">
-                    <tr><td>LCQ-6 (Autonomy Support)</td></tr>
-                    <tr><td>TPS-7 (Psychological Safety)</td></tr>
-                </table>
             </div>
         </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- TAB 4: DIAGNOSTIC GUIDE (Accordions)          -->
-    <!-- ============================================= -->
-    <div id="tab-guide" class="tab-content">
-        <h2 style="margin-top:0;">Differential Diagnosis Guide</h2>
-        <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem;">
-            When a student scores low on a durable skill, the coach's first question should not be "how do I teach this skill?" but <strong>"why is this skill where it is?"</strong> The answer determines the intervention. A single-instrument skill measurement tells you <em>that</em> a student is struggling — the multi-instrument battery tells you <em>why</em>.
-        </p>
-
-        <div class="accordion-wrapper">
-            
-            <button class="accordion-toggle">Root Cause Identification (The 4-Step Logic)<span>▼</span></button>
-            <div class="accordion-panel">
-                <p style="margin-top:1rem;">This diagnostic logic applies across all 12 durable skills. For any skill score, ask in order:</p>
-                <ol style="margin-bottom:1rem; padding-left: 1.5rem; line-height: 1.6;">
-                    <li><strong>What does the EF profile tell me? (Lens 1)</strong> Is there a cognitive constraint that explains the deficit? Or an EF strength to leverage?
-                        <ul style="padding-left:1.5rem; margin-top:0.25rem;">
-                            <li><em>Low WM:</em> scaffold externally, reduce cognitive load</li>
-                            <li><em>Low Inhibition:</em> build in structured pauses, self-monitoring</li>
-                            <li><em>Low Cog Flex:</em> graduated perspective-shifting exercises</li>
-                            <li><em>Strong EF across the board:</em> leverage with complex, multi-step skill-building</li>
-                        </ul>
-                    </li>
-                    <li style="margin-top:0.5rem;"><strong>What do the related skill instruments show? (Lens 2)</strong> Where exactly is the gap? Multiple instruments covering adjacent constructs narrow the root cause.</li>
-                    <li style="margin-top:0.5rem;"><strong>What's the motivational context? (Lens 3)</strong> High amotivation or high need frustration may explain skill deficits as secondary to disengagement. Conversely, strong intrinsic motivation means the student has fuel to channel.</li>
-                    <li style="margin-top:0.5rem;"><strong>Is the environment a barrier? (Lens 4 — T3 only)</strong> Low autonomy support or psychological safety may suppress skill expression even when EF, disposition, and motivation are adequate.</li>
-                </ol>
-                <div class="highlight-box">
-                    <strong>When EF Is a Strength:</strong> The EF lens helps explain whether a skill strength is robust or fragile. A student with strong communication skills and strong EF has a durable strength. A student with strong communication skills but low inhibitory control may perform well in structured settings but struggle in high-pressure or emotionally charged conversations.
-                </div>
+    <div id="card-fuel" class="accordion-item" style="margin-bottom: 0;">
+        <div class="accordion-header" onclick="toggleAcc(this)">
+            <div class="acc-title-group">
+                <span>🔥 My Fuel (Motivation & Needs)</span>
             </div>
-
-            <button class="accordion-toggle">Worked Example: Creative Problem Solving<span>▼</span></button>
-            <div class="accordion-panel">
-                <p style="margin-top:1rem;">When a student scores low on Creative Problem Solving (SFCQ), distinguish these distinct profiles to determine the intervention:</p>
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">
-                    <h4 style="color: var(--primary);">Profile A: Cognitive Constraint</h4>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>Pattern:</strong> Low WM + Low Cognitive Flexibility + Normal/High Curiosity</p>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>What's happening:</strong> The student is curious, but working memory limitations prevent them from holding multiple solutions simultaneously. They appear "stuck" due to capacity, not lack of ideas.</p>
-                    <p style="font-size: 0.9rem;"><strong>Action:</strong> Scaffold externally (visual organizers). Do NOT insist they "think harder."</p>
-                </div>
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">
-                    <h4 style="color: var(--tertiary);">Profile B: Dispositional Barrier</h4>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>Pattern:</strong> Normal WM + Low Cognitive Flexibility + Low Curiosity</p>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>What's happening:</strong> Adequate capacity, but low flexibility/curiosity creates a dispositional barrier. They resist exploring novel approaches.</p>
-                    <p style="font-size: 0.9rem;"><strong>Action:</strong> Build tolerance for ambiguity. Check motivation context.</p>
-                </div>
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">
-                    <h4 style="color: var(--secondary);">Profile C: Exploratory Deficit</h4>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>Pattern:</strong> Normal WM + Normal Flexibility + Low Curiosity + Low SFCQ-Knowledge</p>
-                    <p style="font-size: 0.9rem; margin-bottom:0.5rem;"><strong>What's happening:</strong> Adequate infrastructure, but lacks the exploratory drive and cultural knowledge base.</p>
-                    <p style="font-size: 0.9rem;"><strong>Action:</strong> Ignite curiosity through exposure to diverse perspectives.</p>
-                </div>
+            <div class="acc-right">
+                <div id="summary-fuel" class="summary-pills"></div>
+                <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
-            
-            <button class="accordion-toggle">Skill-Specific Diagnostic Patterns<span>▼</span></button>
-            <div class="accordion-panel">
-                <table class="detail-table" style="margin-top:1rem;">
-                    <tr><th>Durable Skill</th><th>EF Check (Lens 1)</th><th>Motivational Context (Lens 3 & 4)</th></tr>
-                    <tr>
-                        <td><strong>Critical Thinking</strong></td>
-                        <td>WM + CF: Can they hold multiple arguments and shift viewpoints?</td>
-                        <td>GMS-Intrinsic: Are they intellectually engaged?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Resilience</strong></td>
-                        <td>Inhibition: Can they regulate stress responses?</td>
-                        <td>BPNSFS-Competence: Do they feel capable?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Adaptability</strong></td>
-                        <td>Cognitive Flex: Can they shift cognitive frames?</td>
-                        <td>BPNSFS-Autonomy: Do they feel they have choice?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Communication</strong></td>
-                        <td>WM + Inh: Can they track threads & manage social impulses?</td>
-                        <td>BPNSFS-Relatedness: Do they feel connected to others?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Empathy</strong></td>
-                        <td>Cognitive Flex: Can they take others' perspectives cognitively?</td>
-                        <td>BPNSFS-Relatedness: Relational need satisfaction?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Networking</strong></td>
-                        <td>Inhibition: Social approach/avoidance regulation?</td>
-                        <td>GMS-Amotivation: Broadly disengaged?</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Collaboration</strong></td>
-                        <td>WM + CF: Can they track group dynamics and shift roles?</td>
-                        <td>TPS-7: Is the team environment psychologically safe?</td>
-                    </tr>
-                </table>
+        </div>
+        <div class="accordion-content">
+            <p id="text-fuel-desc" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;"></p>
+            <div class="metric-row">
+                <div class="metric-box">
+                    <strong>Autonomy</strong>
+                    <span id="badge-fuel-aut" class="badge"></span>
+                </div>
+                <div class="metric-box">
+                    <strong>Competence</strong>
+                    <span id="badge-fuel-comp" class="badge"></span>
+                </div>
+                <div class="metric-box">
+                    <strong>Relatedness</strong>
+                    <span id="badge-fuel-rel" class="badge"></span>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ============================================= -->
-    <!-- TAB 5: ADMIN & SCORING (Accordions)           -->
-    <!-- ============================================= -->
-    <div id="tab-admin" class="tab-content">
-        <h2 style="margin-top:0;">Administration</h2>
-        <div class="accordion-wrapper">
-            <button class="accordion-toggle">Sprint Schedule<span>▼</span></button>
-            <div class="accordion-panel">
-                <table class="detail-table" style="margin-top:1rem;">
-                    <tr><th>Sitting</th><th>Sprints</th><th>Time</th></tr>
-                    <tr><td>T1 (Start)</td><td>A (EF/SDT), B (Core), C (Inter)</td><td>~45 min</td></tr>
-                    <tr><td>T2 (Mid)</td><td>A (Core I), B (Core II)</td><td>~20 min</td></tr>
-                    <tr><td>T3 (End)</td><td>A (EF/SDT), B (Core), C (Ctx)</td><td>~35 min</td></tr>
-                </table>
+<!-- 2-Column Main Grid -->
+<div class="container main-grid">
+
+    <!-- LEFT COL: 4 Pillars (Accordions) -->
+    <aside class="pillars-col">
+        <p style="color:var(--text-muted); margin-bottom:1rem; font-weight:600; font-size:0.9rem;">Select a durable skill to build a plan.</p>
+
+        <!-- Pillar 1 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <div class="acc-title-group">💡 Creative & Curious</div>
+                <div class="acc-right">
+                    <span class="badge watch">1 Needs Focus</span>
+                    <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="skills-list">
+                    <div id="card-crit" class="skill-row" onclick="selectSkill('crit', this)">
+                        <div class="skill-name">Critical Thinking</div>
+                        <span id="badge-skill-crit" class="badge"></span>
+                    </div>
+                    <div id="card-cps" class="skill-row" onclick="selectSkill('cps', this)">
+                        <div class="skill-name">Creative Problem Solving</div>
+                        <span id="badge-skill-cps" class="badge"></span>
+                    </div>
+                    <div id="card-curio" class="skill-row" onclick="selectSkill('curio', this)">
+                        <div class="skill-name">Curiosity</div>
+                        <span id="badge-skill-curio" class="badge"></span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+
+        <!-- Pillar 2 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <div class="acc-title-group">🚀 Purpose & Agency</div>
+                <div class="acc-right">
+                    <span class="badge blocker">1 Blocker</span>
+                    <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="skills-list">
+                    <div id="card-init" class="skill-row" onclick="selectSkill('init', this)">
+                        <div class="skill-name">Initiative</div>
+                        <span id="badge-skill-init" class="badge"></span>
+                    </div>
+                    <div id="card-resil" class="skill-row" onclick="selectSkill('resil', this)">
+                        <div class="skill-name">Resilience</div>
+                        <span id="badge-skill-resil" class="badge"></span>
+                    </div>
+                    <div id="card-comm" class="skill-row" onclick="selectSkill('comm', this)">
+                        <div class="skill-name">Communication</div>
+                        <span id="badge-skill-comm" class="badge"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <div class="acc-title-group">🌊 Thrivers in Change</div>
+                <div class="acc-right">
+                    <span class="badge watch">1 Needs Focus</span>
+                    <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="skills-list">
+                    <div id="card-adapt" class="skill-row" onclick="selectSkill('adapt', this)">
+                        <div class="skill-name">Adaptability</div>
+                        <span id="badge-skill-adapt" class="badge"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAcc(this)">
+                <div class="acc-title-group">🤝 Network Builders</div>
+                <div class="acc-right">
+                    <span class="badge clear">All Clear</span>
+                    <svg class="caret-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="skills-list">
+                    <div id="card-collab" class="skill-row" onclick="selectSkill('collab', this)">
+                        <div class="skill-name">Collaboration</div>
+                        <span id="badge-skill-collab" class="badge"></span>
+                    </div>
+                    <div id="card-net" class="skill-row" onclick="selectSkill('net', this)">
+                        <div class="skill-name">Networking</div>
+                        <span id="badge-skill-net" class="badge"></span>
+                    </div>
+                    <div id="card-rel" class="skill-row" onclick="selectSkill('rel', this)">
+                        <div class="skill-name">Relationship Building</div>
+                        <span id="badge-skill-rel" class="badge"></span>
+                    </div>
+                    <div id="card-emp" class="skill-row" onclick="selectSkill('emp', this)">
+                        <div class="skill-name">Empathy</div>
+                        <span id="badge-skill-emp" class="badge"></span>
+                    </div>
+                    <div id="card-soc" class="skill-row" onclick="selectSkill('soc', this)">
+                        <div class="skill-name">Social Awareness</div>
+                        <span id="badge-skill-soc" class="badge"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- RIGHT COL: DDx Action Planner Schema -->
+    <main class="planner-col">
+        <div class="planner-section">
+            <div id="empty-state" class="planner-empty">
+                <div>
+                    <h3 style="color:var(--text-main); margin-bottom:0.5rem;">No Skill Selected</h3>
+                    <p>Select a durable skill from the left panel to view the tailored coaching and student feedback plan.</p>
+                </div>
+            </div>
+
+            <div id="ddx-output" class="ddx-output">
+                <div class="ddx-header">
+                    <h2 id="ddx-skill-title">Skill Name</h2>
+                    <span id="ddx-status-badge" class="badge">Status</span>
+                    <div id="ddx-ef-lens" class="ef-lens" style="margin-top:0.5rem;"></div>
+                </div>
+
+                <!-- Strengths-First Student UI -->
+                <div class="ui-section" style="margin-bottom: 1.5rem;">
+                    <span class="ui-label">Your Approach (Strengths First)</span>
+                    <div id="ddx-student-ui" class="content-box student-ui-box"></div>
+                </div>
+
+                <!-- Recommendations (Full Width) -->
+                <div class="ui-section" style="margin-bottom: 0;">
+                    <span class="ui-label" style="color: var(--primary); display: flex; align-items: center; gap: 0.35rem;">
+                        <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Coach's Toolkit (How they will support you)
+                    </span>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Your tutor will bring these specific, evidence-based activities to your sessions to help you build this skill.</p>
+                    <div id="ddx-recs-container"></div>
+                </div>
+                
+                <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 1.5rem; font-style: italic; border-top: 1px solid var(--border); padding-top: 1rem;">
+                    Micro-caveat: These are coaching signals; supports help strengths show up consistently (not a diagnosis).
+                </p>
+
+            </div>
+        </div>
+    </main>
 
 </div>
 
 <script>
-    // --- TAB SWITCHING ---
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-        
-        document.getElementById(`tab-${tabId}`).classList.add('active');
-        
-        // Match button to tab
-        const buttons = document.querySelectorAll('.nav-tab');
-        if(tabId === 'student') buttons[0].classList.add('active');
-        if(tabId === 'coach') {
-            buttons[1].classList.add('active');
-            if(!document.getElementById('lens-display').innerHTML.trim()) { showLens(1); }
+    // Accordion Logic
+    function toggleAcc(element) {
+        element.classList.toggle("active");
+        var content = element.nextElementSibling;
+        if (content.classList.contains("active")) {
+            content.classList.remove("active");
+        } else {
+            content.classList.add("active");
         }
-        if(tabId === 'details') buttons[2].classList.add('active');
-        if(tabId === 'guide') buttons[3].classList.add('active');
-        if(tabId === 'admin') buttons[4].classList.add('active');
     }
 
-    // --- ACCORDION LOGIC FOR REFERENCE TABS ---
-    const acc = document.getElementsByClassName("accordion-toggle");
-    for (let i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            const panel = this.nextElementSibling;
-            if (panel.style.maxHeight) {
-                panel.style.maxHeight = null;
-                panel.classList.remove("open");
-            } else {
-                panel.classList.add("open");
-                panel.style.maxHeight = panel.scrollHeight + "px";
+    // Data Store built from the provided schema and 24 starter entries
+    const students = {
+        'carlos': {
+            engine: { tier: 'EF-2 (Constraints)', cls: 'watch', wm: 'Watch', wmCls: 'watch', inh: 'Blocker', inhCls: 'blocker', cf: 'Clear', cfCls: 'clear', text: 'Working Memory and Inhibition are currently presenting constraints.' },
+            fuel: { tier: 'Mixed (Watch)', cls: 'watch', aut: 'Watch', autCls: 'watch', comp: 'Watch', compCls: 'watch', rel: 'Thriving', relCls: 'clear', text: 'You are highly motivated to connect, but competence/autonomy need monitoring.' },
+            skills: {
+                crit: { text: 'Needs Focus', cls: 'watch' }, 
+                cps: { text: 'Strong', cls: 'clear' },
+                curio: { text: 'Strong', cls: 'clear' },
+                init: { text: 'Blocker', cls: 'blocker' }, 
+                resil: { text: 'Needs Focus', cls: 'watch' },
+                comm: { text: 'Needs Focus', cls: 'watch' },
+                adapt: { text: 'Needs Focus', cls: 'watch' },
+                collab: { text: 'Strong', cls: 'clear' },
+                net: { text: 'Strong', cls: 'clear' },
+                rel: { text: 'Strong', cls: 'clear' },
+                emp: { text: 'Strong', cls: 'clear' },
+                soc: { text: 'Needs Focus', cls: 'watch' }
+            },
+            ddx: {
+                crit: {
+                    name: 'Critical Thinking', statusClass: 'watch', statusText: 'Needs Focus', efLens: 'cognitive_wm — Cognitive | Working Memory (WM)',
+                    studentUi: 'You may do your best work when you can focus on one clear thread. When the task asks you to hold several ideas, steps, or sources in mind at once, your strengths can show up more consistently with simple structure and external supports.',
+                    recs: [
+                        { tag: 'EF-WM', title: 'Fact–Assumption–Question (FAQ) Split (Moderate)', desc: 'Write the decision/claim in one sentence.', source: 'Kahneman, D. (2011). Thinking, Fast and Slow.' },
+                        { tag: 'EF-WM/ARC-Competence', title: 'Claim–Evidence–Reasoning (CER) for Work Decisions', desc: 'Write your claim: what you recommend.', source: 'Toulmin, S. (1958). The Uses of Argument.' }
+                    ]
+                },
+                cps: {
+                    name: 'Creative Problem Solving', statusClass: 'clear', statusText: 'Strong', efLens: 'cognitive_inh — Cognitive | Inhibition',
+                    studentUi: 'You may be quick to spot a direction and move—often a real strength. This skill gets easier when you add a short pause that helps you choose intentionally rather than defaulting to the first answer.',
+                    recs: [
+                        { tag: 'EF-Inh/ARC-Regulation', title: 'Constraint Flip: "How Might We… with Limits?"', desc: 'List your top 2 constraints (time, budget, staff).', source: 'Stokes, P. D. (2005). Creativity from constraints.' },
+                        { tag: 'EF-Inh', title: '5 Whys + One Proof Check (Practice-based)', desc: 'Write the problem as an observable event.', source: 'Imai, M. (2012). Gemba Kaizen (2nd ed.).' }
+                    ]
+                },
+                curio: {
+                    name: 'Curiosity', statusClass: 'clear', statusText: 'Strong', efLens: 'cognitive_cogflex — Cognitive | Cognitive Flexibility',
+                    studentUi: 'You have a natural ability to seek out new information. When faced with a rigid framework, practicing small perspective-shifts can help keep your curiosity engaged.',
+                    recs: [
+                        { tag: 'EF-CogFlex', title: 'Argue the Opposite Position', desc: 'Take 5 minutes to write down three reasons the opposing view makes sense.', source: 'Stanovich, K. E. (2000).' }
+                    ]
+                },
+                init: {
+                     name: 'Initiative', statusClass: 'blocker', statusText: 'Blocker', efLens: 'self_directed_wm_inh — Self-Directed | WM + Inhibition',
+                     studentUi: 'You may genuinely want to follow through. When a plan has multiple steps and distractions or frustration show up, it can help to make the next step visible and protect it with a few guardrails.',
+                     recs: [
+                         { tag: 'EF-WM+Inh', title: 'If-Then Planning (Implementation Intentions)', desc: 'Choose one task and decide exactly when and where you will start it.', source: 'Gollwitzer & Sheeran (2006) Meta-Analysis' },
+                         { tag: 'ARC-Connection/EF-Inh', title: 'Accountability Check-ins (Moderate)', desc: 'Identify an accountability partner (a friend, coach, or classmate).', source: 'Matthews (2007), Dominican Univ. Study' }
+                     ]
+                },
+                resil: {
+                    name: 'Resilience', statusClass: 'watch', statusText: 'Needs Focus', efLens: 'self_directed_wm — Self-Directed | Working Memory (WM)',
+                    studentUi: 'You have strong goals and intentions. When setbacks happen, keeping your original goal highly visible prevents it from getting lost in the shuffle of frustration.',
+                    recs: [
+                        { tag: 'EF-WM', title: 'Visible Goal Tracker', desc: 'Keep a sticky note with your primary goal on your workspace.', source: 'Locke & Latham (2002).' }
+                    ]
+                },
+                comm: {
+                     name: 'Communication', statusClass: 'watch', statusText: 'Needs Focus', efLens: 'interpersonal_wm — Interpersonal | Working Memory (WM)',
+                     studentUi: 'You may contribute best when conversations are calmer or more structured. In fast groups, supports that help you track the thread can make it easier to participate in the way you intend.',
+                     recs: [
+                         { tag: 'EF-WM/ARC-Connection', title: '"I-Statement" Assertion Technique (Moderate)', desc: 'Draft an “I feel…when…because…I need…” sentence.', source: 'Speed et al. (2017)' },
+                         { tag: 'EF-WM', title: 'Role-Play Your Message (Moderate)', desc: 'Choose an upcoming conversation you’re nervous about and practice out loud.', source: 'Luciano et al. (2020)' }
+                     ]
+                },
+                adapt: {
+                    name: 'Adaptability', statusClass: 'watch', statusText: 'Needs Focus', efLens: 'cognitive_inh — Cognitive | Inhibition',
+                    studentUi: 'You may be quick to spot a direction and move—often a real strength. This skill gets easier when you add a short pause that helps you choose intentionally rather than defaulting to the first answer.',
+                    recs: [
+                        { tag: 'EF-Inh/ARC-Regulation', title: 'Mindful Pause in Uncertainty (Strong)', desc: 'Next time something unexpected happens, take one slow breath and name what’s happening.', source: 'Hölzel et al. (2011)' },
+                        { tag: 'EF-Inh', title: 'Reframe Setbacks as Learning', desc: 'When a plan goes wrong, write one “what this teaches me” sentence.', source: 'Gross & John (2003)' }
+                    ]
+                },
+                collab: {
+                    name: 'Collaboration', statusClass: 'clear', statusText: 'Strong', efLens: 'self_directed_wm_inh — Self-Directed | WM + Inhibition',
+                    studentUi: 'You may genuinely want to follow through. When a plan has multiple steps and distractions or frustration show up, it can help to make the next step visible and protect it with a few guardrails.',
+                    recs: [
+                        { tag: 'EF-WM+Inh', title: 'Visible Work Board (3 Columns)', desc: 'Create a simple board: To Do / Doing / Done.', source: 'Kanban method (Anderson, 2010).' },
+                        { tag: 'ARC-Connection/EF-Inh', title: '3-Point Agenda + Decision Log', desc: 'Before the meeting, write a 3-point agenda: updates, decisions, blockers.', source: 'Rogelberg, S. G. (2019)' }
+                    ]
+                },
+                net: {
+                    name: 'Networking', statusClass: 'clear', statusText: 'Strong', efLens: 'interpersonal_wm — Interpersonal | Working Memory (WM)',
+                    studentUi: 'You naturally build strong 1:1 connections. In larger networking settings, using a simple conversation framework can help reduce the mental energy needed to track multiple people.',
+                    recs: [
+                        { tag: 'EF-WM', title: 'Conversation Prep Template', desc: 'Write down 2 key questions before entering a group setting.', source: 'LE3 Interpersonal Framework.' }
+                    ]
+                },
+                rel: {
+                    name: 'Relationship Building', statusClass: 'clear', statusText: 'Strong', efLens: 'Asset Leverage',
+                    studentUi: 'You naturally form trusting relationships with adults. This is a massive strength! When things get tough, your ability to connect 1-on-1 is the best tool you have to get back on track.',
+                    recs: [
+                        { tag: 'ARC-Connection', title: 'Leverage 1:1 Check-ins', desc: 'Seek out 1:1 time with a trusted tutor when frustrated.', source: 'Deci & Ryan (2000).' }
+                    ]
+                },
+                emp: {
+                    name: 'Empathy', statusClass: 'clear', statusText: 'Strong', efLens: 'Asset Leverage',
+                    studentUi: 'Your naturally high capacity for connection allows you to easily shift into others\' perspectives. You can use this superpower to help scaffold weaker skills in group settings.',
+                    recs: [
+                        { tag: 'ARC-Connection', title: 'Mediate Team Conflict', desc: 'Use empathy to find common ground in group Collaboration tasks.', source: 'LE3 Asset Framework.' }
+                    ]
+                },
+                soc: {
+                    name: 'Social Awareness', statusClass: 'watch', statusText: 'Needs Focus', efLens: 'interpersonal_inh — Interpersonal | Inhibition',
+                    studentUi: 'You care about how others feel, but sometimes quick emotional reactions can make it hard to read the room. A slight pause gives your brain time to process social cues.',
+                    recs: [
+                        { tag: 'EF-Inh', title: 'Pause-and-Observe Strategy', desc: 'Take a 3-second mental pause before responding in a tense social situation.', source: 'LE3 Social Framework.' }
+                    ]
+                }
             }
+        }
+    };
+
+    let currentStudent = 'carlos';
+
+    function switchStudent(studentId) {
+        currentStudent = studentId;
+        const data = students[studentId];
+
+        function buildPills(clsArray) {
+            let counts = { blocker: 0, watch: 0, clear: 0 };
+            clsArray.forEach(c => { if(counts[c] !== undefined) counts[c]++; });
+            let html = '';
+            if (counts.blocker > 0) html += `<span class="summary-pill blocker"><span class="count">${counts.blocker}</span> Blocker${counts.blocker > 1 ? 's' : ''}</span>`;
+            if (counts.watch > 0) html += `<span class="summary-pill watch"><span class="count">${counts.watch}</span> Watch${counts.watch !== 1 ? 'es' : ''}</span>`;
+            if (counts.blocker === 0 && counts.watch === 0) html += `<span class="summary-pill clear">All Clear</span>`;
+            return html;
+        }
+
+        document.getElementById('summary-ef').innerHTML = buildPills([data.engine.wmCls, data.engine.inhCls, data.engine.cfCls]);
+        document.getElementById('text-ef-desc').innerText = data.engine.text;
+        
+        document.getElementById('badge-ef-wm').className = `badge ${data.engine.wmCls}`;
+        document.getElementById('badge-ef-wm').innerText = data.engine.wm;
+        document.getElementById('badge-ef-inh').className = `badge ${data.engine.inhCls}`;
+        document.getElementById('badge-ef-inh').innerText = data.engine.inh;
+        document.getElementById('badge-ef-cf').className = `badge ${data.engine.cfCls}`;
+        document.getElementById('badge-ef-cf').innerText = data.engine.cf;
+
+        // Pulse Animation for Blockers
+        const engineCard = document.getElementById('card-engine');
+        engineCard.classList.remove('pulse-blocker');
+        if(data.engine.cls === 'blocker') { void engineCard.offsetWidth; engineCard.classList.add('pulse-blocker'); }
+
+        document.getElementById('summary-fuel').innerHTML = buildPills([data.fuel.autCls, data.fuel.compCls, data.fuel.relCls]);
+        document.getElementById('text-fuel-desc').innerText = data.fuel.text;
+        
+        document.getElementById('badge-fuel-aut').className = `badge ${data.fuel.autCls}`;
+        document.getElementById('badge-fuel-aut').innerText = data.fuel.aut;
+        document.getElementById('badge-fuel-comp').className = `badge ${data.fuel.compCls}`;
+        document.getElementById('badge-fuel-comp').innerText = data.fuel.comp;
+        document.getElementById('badge-fuel-rel').className = `badge ${data.fuel.relCls}`;
+        document.getElementById('badge-fuel-rel').innerText = data.fuel.rel;
+
+        const fuelCard = document.getElementById('card-fuel');
+        fuelCard.classList.remove('pulse-blocker');
+        if(data.fuel.cls === 'blocker') { void fuelCard.offsetWidth; fuelCard.classList.add('pulse-blocker'); }
+
+        // Update all 12 durable skill badges
+        const skillKeys = ['crit', 'cps', 'curio', 'init', 'resil', 'comm', 'adapt', 'collab', 'net', 'rel', 'emp', 'soc'];
+        skillKeys.forEach(k => {
+            const badge = document.getElementById(`badge-skill-${k}`);
+            if (badge) {
+                badge.className = `badge ${data.skills[k].cls}`;
+                badge.innerText = data.skills[k].text;
+            }
+            const card = document.getElementById(`card-${k}`);
+            if (card) card.classList.remove('selected');
+        });
+
+        document.getElementById('empty-state').style.display = 'flex';
+        document.getElementById('ddx-output').style.display = 'none';
+    }
+
+    function selectSkill(skillId, cardElement) {
+        document.querySelectorAll('.skill-row').forEach(c => c.classList.remove('selected'));
+        cardElement.classList.add('selected');
+        
+        document.getElementById('empty-state').style.display = 'none';
+        const ddxContainer = document.getElementById('ddx-output');
+        ddxContainer.style.display = 'block';
+
+        const profile = students[currentStudent].ddx[skillId];
+
+        // Header Info
+        document.getElementById('ddx-skill-title').innerText = profile.name;
+        document.getElementById('ddx-ef-lens').innerText = "EF Lens: " + profile.efLens;
+        const badge = document.getElementById('ddx-status-badge');
+        badge.className = `badge ${profile.statusClass}`;
+        badge.innerText = profile.statusText;
+
+        // Populate Schema Fields
+        document.getElementById('ddx-student-ui').innerText = profile.studentUi;
+
+        // Recommendations
+        const recsContainer = document.getElementById('ddx-recs-container');
+        recsContainer.innerHTML = '';
+        profile.recs.forEach(rec => {
+            recsContainer.innerHTML += `
+                <div class="rec-item">
+                    <span class="rec-tag">${rec.tag}</span>
+                    <span class="rec-title">${rec.title}</span>
+                    <span style="display: block; margin-bottom: 0.25rem;">${rec.desc}</span>
+                    <span class="rec-source">Sources: ${rec.source}</span>
+                </div>
+            `;
         });
     }
 
-    // --- ACCORDION LOGIC FOR STUDENT PILLARS ---
-    function togglePillar(header) {
-        header.classList.toggle('active');
-        const content = header.nextElementSibling;
-        content.classList.toggle('open');
-    }
-
-    // --- STUDENT VIEW ACTION PLANNER LOGIC ---
-    const plannerContainer = document.getElementById('planner-container');
-    const emptyState = document.getElementById('empty-state');
-    const saveBtn = document.getElementById('save-btn');
-    
-    const studentStrategies = {
-        'Critical Thinking': ["Write down evidence for/against an idea.", "Debate a topic from the opposing side.", "Ask 'why' 3 times."],
-        'Creative Problem Solving': ["Use a visual map to brainstorm ideas.", "Research how another culture solves this.", "Generate 3 'bad' solutions first."],
-        'Cognitive Flexibility': ["Try a new way to solve an old problem.", "Switch tasks intentionally.", "Argue a perspective you disagree with."],
-        'Resilience': ["Practice 'Pause & Breathe'.", "Keep a 'Wins Journal'.", "Ask for feedback on a failure."],
-        'Adaptability': ["Create a Plan B.", "Reframe a change as an opportunity.", "Try a new productivity tool."],
-        'Self-Regulation': ["Use a timer for 25-minute blocks.", "Remove your phone from the room.", "Create a pre-work checklist."],
-        'Empathy': ["Practice active listening.", "Ask 'How did that make you feel?'", "Observe body language."],
-        'Communication': ["Use a checklist to prep for meetings.", "Summarize what you heard.", "Ask one open-ended question."],
-        'Networking': ["Send one connection message a week.", "Attend one new event.", "Ask a peer for a virtual coffee."],
-        'Relationship Quality': ["Ask for constructive feedback.", "Offer support to a peer.", "Express gratitude explicitly."],
-        'Initiative': ["Volunteer for a new task.", "Set a personal goal for the weekend.", "Read one article related to your career."],
-        'Motivation & Purpose': ["Connect task to long-term goal.", "Find one fun aspect of the work.", "Reward yourself after completion."]
-    };
-
-    // New: Personalized diagnostic insights based on Alex Student's mock profile
-    const studentInsights = {
-        'Critical Thinking': "🧠 <strong>Based on your Engine:</strong> With moderate working memory, holding multiple competing arguments in your head is taxing. We recommend getting ideas out on paper first.",
-        'Creative Problem Solving': "🧠 <strong>Based on your Engine:</strong> Your cognitive flexibility is developing. Trying to force 'outside the box' thinking can feel frustrating. We recommend structured, step-by-step brainstorming.",
-        'Cognitive Flexibility': "🧠 <strong>Based on your Engine:</strong> Your brain currently prefers known patterns over sudden shifts. We recommend strategies that slowly introduce new perspectives in a safe way.",
-        'Resilience': "🔥 <strong>Based on your Fuel:</strong> Your confidence (Competence) is currently lower, so failures might sting extra hard right now. We recommend strategies that visually prove your progress to yourself.",
-        'Adaptability': "🔥 <strong>Based on your Fuel:</strong> You have high Autonomy (you like being in control). Sudden changes might feel like a loss of that control. We recommend strategies that help you reclaim agency.",
-        'Self-Regulation': "🧠 <strong>Based on your Engine:</strong> You already have fantastic Inhibition (focus control)! You can handle demanding, sustained tasks. We recommend strategies that leverage this strength.",
-        'Empathy': "🔥 <strong>Based on your Fuel:</strong> You have very high Relatedness (you care about connecting). This is a superpower you can use to deeply understand your teammates' perspectives.",
-        'Communication': "🧠 <strong>Based on your Engine:</strong> With moderate working memory, tracking complex conversation threads on the fly can be draining. Prep-checklists will help offload that mental tax.",
-        'Networking': "🔥 <strong>Based on your Fuel:</strong> Lower confidence (Competence) can make reaching out to strangers intimidating. We recommend starting with small, 'warm' introductions through people you know.",
-        'Relationship Quality': "🔥 <strong>Based on your Fuel:</strong> You already feel highly connected (Relatedness) to your peers! We recommend strategies that leverage these strong bonds to offer support.",
-        'Initiative': "🔥 <strong>Based on your Fuel:</strong> Lower confidence might be holding you back from volunteering for new tasks. We recommend taking initiative in low-stakes, safe environments first.",
-        'Motivation & Purpose': "🔥 <strong>Based on your Fuel:</strong> When competence feels low, it's hard to find purpose. We recommend strategies that tie your daily tasks directly to your long-term goals."
-    };
-
-    function toggleSkill(card, skillName, description) {
-        card.classList.toggle('selected');
-        const isSelected = card.classList.contains('selected');
-        
-        if (isSelected) {
-            addPlanCard(skillName, description);
-        } else {
-            removePlanCard(skillName);
-        }
-        updateEmptyState();
-    }
-
-    function addPlanCard(skillName, description) {
-        const id = skillName.replace(/\s+/g, '-').toLowerCase();
-        const skillStrategies = studentStrategies[skillName] || ["Set a daily goal."];
-        const personalizedInsight = studentInsights[skillName] || "🧠 <strong>Based on your profile:</strong> We recommend starting with small, actionable steps to build this skill.";
-        
-        const cardHTML = `
-            <div class="plan-card" id="plan-${id}">
-                <div class="plan-skill-info">
-                    <h3 style="color:#4f46e5; margin-bottom:0.25rem; font-size: 1.1rem;">${skillName}</h3>
-                    <p style="font-size:0.85rem; color:#64748b; line-height:1.3;">${description}</p>
-                </div>
-                <div class="diagnostic-insight">
-                    ${personalizedInsight}
-                </div>
-                <div class="plan-actions">
-                    <label>Recommended Strategy:</label>
-                    <select class="plan-select">
-                        <option value="" disabled selected>Select a strategy...</option>
-                        ${skillStrategies.map(s => `<option>${s}</option>`).join('')}
-                    </select>
-                    <label>My Commitment:</label>
-                    <input type="text" class="plan-select" placeholder="e.g., I will try this on Tuesday...">
-                </div>
-            </div>
-        `;
-        emptyState.insertAdjacentHTML('afterend', cardHTML);
-    }
-
-    function removePlanCard(skillName) {
-        const id = skillName.replace(/\s+/g, '-').toLowerCase();
-        const card = document.getElementById(`plan-${id}`);
-        if (card) card.remove();
-    }
-
-    function updateEmptyState() {
-        const cards = document.querySelectorAll('.plan-card');
-        const counter = document.getElementById('plan-counter');
-        
-        counter.innerText = `${cards.length} Selected`;
-        
-        if (cards.length > 0) {
-            emptyState.style.display = 'none';
-            saveBtn.style.display = 'block';
-        } else {
-            emptyState.style.display = 'flex';
-            saveBtn.style.display = 'none';
-        }
-    }
-
-    // --- COACH VIEW LOGIC ---
-    const lensData = {
-        1: {
-            title: "Executive Function",
-            colorClass: "l1",
-            question: "What cognitive capacities is the student working with?",
-            content: `<p><strong>Check First:</strong> EF strengths indicate coaching approach.</p>
-                      <ul style="padding-left:1.2rem; margin:0.5rem 0;">
-                        <li><strong>Low WM:</strong> Use visual aids/checklists.</li>
-                        <li><strong>Low Inhibition:</strong> Structure pauses.</li>
-                        <li><strong>Strong EF:</strong> Use complex interventions.</li>
-                      </ul>`
-        },
-        2: {
-            title: "Durable Skills",
-            colorClass: "l2",
-            question: "Where are the skill gaps across 12 LE3 competencies?",
-            content: `<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.85rem;">
-                        <div style="background:#f1f5f9; padding:0.5rem;"><strong>Cognitive</strong><br>Crit. Thinking, Prob Solving</div>
-                        <div style="background:#f1f5f9; padding:0.5rem;"><strong>Intrapersonal</strong><br>Resilience, Adaptability</div>
-                        <div style="background:#f1f5f9; padding:0.5rem;"><strong>Interpersonal</strong><br>Empathy, Comm., Network</div>
-                        <div style="background:#f1f5f9; padding:0.5rem;"><strong>Self-Dir</strong><br>Initiative, Motivation</div>
-                      </div>`
-        },
-        3: {
-            title: "Self-Determination",
-            colorClass: "l3",
-            question: "How is the student's motivational functioning?",
-            content: `<p style="margin-top:0;"><strong>Bidirectional:</strong> Skills fuel needs, needs fuel skills.</p>
-                      <div class="highlight-box warning" style="margin:0.5rem 0; font-size:0.85rem; padding:0.5rem; border-left:4px solid #d97706; background:#fff7ed; color:#7c2d12;">
-                        <strong>Clinical Flag:</strong> Amotivation ≥ 4.0 requires intervention before skills coaching.
-                      </div>`
-        },
-        4: {
-            title: "Contextual Enablers",
-            colorClass: "l4",
-            question: "Is the environment helping or hurting? (T3 Only)",
-            content: `<p>Use when skills aren't moving despite adequate EF.</p>
-                      <ul style="padding-left:1.2rem; margin:0.5rem 0;">
-                        <li><strong>LCQ-6:</strong> Autonomy Support</li>
-                        <li><strong>TPS-7:</strong> Psychological Safety</li>
-                      </ul>`
-        }
-    };
-
-    function showLens(id) {
-        const display = document.getElementById('lens-display');
-        const data = lensData[id];
-        
-        document.querySelectorAll('.lens-mini-card').forEach(c => c.classList.remove('active'));
-        document.querySelector(`.lens-mini-card.l${id}`).classList.add('active');
-
-        display.innerHTML = `
-            <div style="border-bottom: 2px solid #e2e8f0; padding-bottom:0.5rem; margin-bottom:0.5rem;">
-                <strong style="font-size:1.1rem; color:#1e293b;" class="${data.colorClass}">${data.title}</strong>
-            </div>
-            <div class="lens-q">${data.question}</div>
-            ${data.content}
-        `;
-    }
-
-    const diagnosticMap = {
-        "Critical Thinking": { ef: "WM + Flex: Holding arguments/shifting views?", skill: "MSLQ-CT: Habit of evaluating evidence?", mot: "GMS-Intrinsic: Intellectually engaged?" },
-        "Creative Problem Solving": { ef: "WM + Flex: Holding options?", skill: "SFCQ: Cultural/metacognitive knowledge?", mot: "Curiosity: Exploratory drive?" },
-        "Resilience": { ef: "Inhibition: Regulating stress response?", skill: "BRS: Bounce-back capacity?", mot: "Competence: Feeling capable?" },
-        "Adaptability": { ef: "Cog Flex: Shifting frames?", skill: "CAAS-SF: Concern, Control, Curiosity?", mot: "Autonomy: Feeling of choice?" },
-        "Communication": { ef: "WM + Inhibition: Tracking threads?", skill: "SPCC: Context specific gaps?", mot: "Relatedness: Connection?" },
-        "Empathy": { ef: "Cog Flex: Perspective taking?", skill: "IRI: Cognitive vs Affective?", mot: "Relatedness: Need satisfaction?" },
-        "Networking": { ef: "Inhibition: Social approach regulation?", skill: "NBS-6: Initiating frequency?", mot: "Amotivation: Disengagement?" },
-        "Collaboration": { ef: "WM + Flex: Group dynamics?", skill: "RQM-6: Reciprocity?", mot: "TPS-7: Team Safety?" }
-    };
-
-    function runDiagnosis() {
-        const skill = document.getElementById('skillSelector').value;
-        const resultDiv = document.getElementById('diagnosisResult');
-        const map = diagnosticMap[skill];
-
-        if (map) {
-            document.getElementById('res-ef').innerHTML = map.ef;
-            document.getElementById('res-skill').innerHTML = map.skill;
-            document.getElementById('res-mot').innerHTML = map.mot;
-            resultDiv.classList.remove('hidden');
-        }
-    }
+    // Initialize on load
+    switchStudent('carlos');
 </script>
-
 </body>
 </html>
